@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="24" fill="#2563eb"/>
+  <text x="50" y="54" text-anchor="middle" dominant-baseline="central"
+    font-family="Poppins, Segoe UI, Arial, sans-serif" font-size="46" font-weight="800"
+    font-style="italic" letter-spacing="-3" fill="#ffffff">ST</text>
+</svg>

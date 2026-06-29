@@ -1,0 +1,108 @@
+import Link from 'next/link'
+import React from 'react'
+import { Laptop, Package, Smartphone } from 'lucide-react'
+
+import { AddToCart } from '@/components/AddToCart'
+import { CuotaBadge } from '@/components/CuotaBadge'
+import { ReviewStars } from '@/components/ReviewStars'
+import { WishlistButton } from '@/components/WishlistButton'
+import { formatPrice, getDiscount } from '@/utilities/format'
+import { cn } from '@/utilities/ui'
+import type { ViewProduct } from '@/lib/medusa/types'
+
+export const ProductCard: React.FC<{ product: ViewProduct; className?: string }> = ({
+  product,
+  className,
+}) => {
+  const href = `/producto/${product.handle}`
+  const discount = getDiscount(product.price, product.originalPrice)
+  const cat = product.categoryName ?? ''
+  const label = product.brand || cat
+  const PlaceholderIcon = /iphone/i.test(cat) ? Smartphone : /mac/i.test(cat) ? Laptop : Package
+  const hasReviews = (product.reviewCount ?? 0) > 0
+
+  return (
+    <div
+      className={cn(
+        'group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg',
+        className,
+      )}
+    >
+      <Link href={href} className="relative block aspect-square overflow-hidden bg-white p-4">
+        {product.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.image}
+            alt={product.title}
+            loading="lazy"
+            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary/5 to-[#60a5fa]/10">
+            <PlaceholderIcon className="size-16 text-primary/30" strokeWidth={1.25} />
+          </div>
+        )}
+        {discount && (
+          <span className="absolute left-3 top-3 rounded-full bg-[#dc2626] px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+            -{discount.percent}%
+          </span>
+        )}
+      </Link>
+
+      <WishlistButton
+        floating
+        className="absolute right-3 top-3 z-10"
+        product={{
+          id: product.id,
+          handle: product.handle,
+          title: product.title,
+          image: product.image,
+          price: product.price,
+          variantId: product.variantId,
+        }}
+      />
+
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
+        {label && (
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-primary/80">
+            {label}
+          </span>
+        )}
+        <Link href={href}>
+          <h3 className="line-clamp-2 min-h-10 text-sm font-medium leading-snug transition-colors group-hover:text-primary">
+            {product.title}
+          </h3>
+        </Link>
+
+        {hasReviews ? (
+          <ReviewStars rating={product.rating ?? 0} count={product.reviewCount} />
+        ) : (
+          <span className="text-xs text-muted-foreground">Sé el primero en opinar</span>
+        )}
+
+        <div className="mt-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-bold text-foreground">{formatPrice(product.price)}</span>
+            {discount && (
+              <span className="text-sm text-muted-foreground line-through">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </div>
+          {discount && (
+            <span className="text-xs font-medium text-[#dc2626]">
+              Ahorras {formatPrice(discount.save)}
+            </span>
+          )}
+          <CuotaBadge price={product.price} variant="compact" />
+        </div>
+
+        <span className="mt-1 text-xs font-medium text-[#16a34a]">Disponible</span>
+
+        <div className="mt-3 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+          <AddToCart className="w-full" label="Agregar al carrito" variantId={product.variantId} />
+        </div>
+      </div>
+    </div>
+  )
+}

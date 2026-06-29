@@ -1,0 +1,9 @@
+# pnpm 11+ gestiona los scripts de compilación post-install aquí
+# (ya no desde el campo "pnpm" de package.json). Estos paquetes necesitan compilar.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
