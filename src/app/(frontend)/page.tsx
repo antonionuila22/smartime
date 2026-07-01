@@ -12,9 +12,9 @@ import { TrustBand } from '@/components/TrustBand'
 import { listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
 
-// ISR: la home se genera estática y se revalida en segundo plano cada hora. Los datos de
-// catálogo vienen de la capa cacheada (lib/medusa/data.ts): cero queries lentas por visita.
-export const revalidate = 3600
+// Cache Components: la home consume solo datos cacheados (`'use cache'` en lib/medusa/data.ts),
+// así que se prerenderiza completa en el shell estático. Sin `revalidate` a nivel de ruta: el TTL
+// lo gobierna `cacheLife` en la capa de datos.
 
 export const metadata: Metadata = {
   title: 'smartime — Tecnología que te conecta | Honduras',

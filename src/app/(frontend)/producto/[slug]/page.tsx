@@ -16,8 +16,13 @@ import { formatPrice, getDiscount } from '@/utilities/format'
 import { getCategory, getProductByHandle, listProductReviews, listProducts } from '@/lib/medusa/data'
 import { getServerSideURL } from '@/utilities/getURL'
 
-// ISR: cada PDP se genera y se cachea por slug, revalidando en segundo plano cada hora.
-export const revalidate = 3600
+// Cache Components: prerenderizamos cada PDP por slug. `generateStaticParams` da las muestras
+// (los handles del catálogo) para que `params` sea estático; los datos vienen de la capa
+// cacheada. Slugs nuevos se renderizan on-demand y se cachean.
+export async function generateStaticParams() {
+  const products = await listProducts({ limit: 100 }).catch(() => [])
+  return products.map((p) => ({ slug: p.handle }))
+}
 
 type Params = Promise<{ slug: string }>
 

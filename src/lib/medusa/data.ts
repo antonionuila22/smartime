@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache'
+import { cacheLife, cacheTag } from 'next/cache'
 
 import { medusa } from './sdk'
 import type { ReviewItem, ViewProduct } from './types'
@@ -6,44 +6,42 @@ import type { ReviewItem, ViewProduct } from './types'
 const PRODUCT_FIELDS = '*variants.calculated_price,*categories,*images,+thumbnail,+metadata'
 
 /**
- * CACHÉ ISR — la DB es remota (~168ms/round-trip; un listado de productos ≈1.3s). Para que el
- * storefront no pague esa latencia en CADA visita, los lecturas de catálogo se cachean de forma
- * PERSISTENTE con `unstable_cache`: la query lenta se ejecuta una vez y se revalida en segundo
- * plano cada `REVALIDATE`. Se etiquetan (`tags`) para poder invalidar bajo demanda (revalidateTag)
+ * Capa de datos con CACHE COMPONENTS (Next 16). La DB es remota (~168ms/round-trip; un
+ * listado de productos ≈1.3s), así que las lecturas de catálogo se marcan con la directiva
+ * `'use cache'`: su resultado entra en el shell estático (prerender) y se revalida en segundo
+ * plano según `cacheLife`. `cacheTag` permite invalidar bajo demanda (revalidateTag/updateTag)
  * desde un webhook del admin cuando cambien productos/precios.
+ *
+ * Reglas Cache Components: dentro de `'use cache'` NO se accede a cookies/headers/searchParams;
+ * los argumentos y el valor de retorno deben ser serializables (aquí, primitivos y objetos
+ * planos ViewProduct).
  */
-const REVALIDATE = 3600 // catálogo: 1 hora
-const REVALIDATE_REVIEWS = 600 // reseñas: 10 min
 
 /* ------------------------------- Región ------------------------------- */
 
-async function fetchRegionId(): Promise<string | undefined> {
+/** Región Honduras (HNL). Cacheada (rara vez cambia). */
+export async function getRegionId(): Promise<string | undefined> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('regions')
   const { regions } = await medusa.store.region.list()
   const hn = regions.find((r) => r.currency_code === 'hnl') ?? regions[0]
   return hn?.id
 }
 
-/** Región Honduras (HNL). Cacheada (rara vez cambia). */
-export const getRegionId = unstable_cache(fetchRegionId, ['region-id'], {
-  revalidate: REVALIDATE,
-  tags: ['regions'],
-})
-
 /* ------------------------------ Categorías ---------------------------- */
 
-async function fetchCategories() {
+/** Categorías de la tienda (Mac, iPhone…). Cacheadas. */
+export async function listCategories() {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('categories')
   const { product_categories } = await medusa.store.category.list({
     fields: 'id,name,handle',
     limit: 50,
   })
   return product_categories
 }
-
-/** Categorías de la tienda (Mac, iPhone…). Cacheadas. */
-export const listCategories = unstable_cache(fetchCategories, ['categories'], {
-  revalidate: REVALIDATE,
-  tags: ['categories'],
-})
 
 /** Deriva de `listCategories` (cacheada); no necesita caché propia. */
 export async function getCategory(slugOrName: string) {
@@ -88,9 +86,13 @@ export function toViewProduct(p: any): ViewProduct {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-async function fetchProducts(
+/** Listado de productos (con precio y reseñas). Cacheado por combinación de parámetros. */
+export async function listProducts(
   params: { categoryId?: string; q?: string; limit?: number } = {},
 ): Promise<ViewProduct[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('products')
   const region_id = await getRegionId()
   const { products } = await medusa.store.product.list({
     region_id,
@@ -111,13 +113,11 @@ async function fetchProducts(
   return views
 }
 
-/** Listado de productos (con precio y reseñas). Cacheado por combinación de parámetros. */
-export const listProducts = unstable_cache(fetchProducts, ['products'], {
-  revalidate: REVALIDATE,
-  tags: ['products'],
-})
-
-async function fetchProductByHandle(handle: string): Promise<ViewProduct | null> {
+/** Producto por handle (para la PDP). Cacheado por handle. */
+export async function getProductByHandle(handle: string): Promise<ViewProduct | null> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('products')
   const region_id = await getRegionId()
   const { products } = await medusa.store.product.list({
     handle,
@@ -136,16 +136,10 @@ async function fetchProductByHandle(handle: string): Promise<ViewProduct | null>
   return view
 }
 
-/** Producto por handle (para la PDP). Cacheado por handle. */
-export const getProductByHandle = unstable_cache(fetchProductByHandle, ['product-by-handle'], {
-  revalidate: REVALIDATE,
-  tags: ['products'],
-})
-
 /* ----------------------------- Reseñas ----------------------------- */
 
-/** Resumen {average, count} por producto (para estrellas en tarjetas). No cacheado aparte:
- *  se consume dentro de `listProducts`/`getProductByHandle`, que ya están cacheados. */
+/** Resumen {average, count} por producto. Se consume dentro de listProducts/getProductByHandle
+ *  (ya cacheados), por eso no lleva su propia directiva. */
 export async function getReviewSummaries(
   ids: string[],
 ): Promise<Record<string, { average: number; count: number }>> {
@@ -160,9 +154,13 @@ export async function getReviewSummaries(
   }
 }
 
-async function fetchProductReviews(
+/** Reseñas aprobadas + promedio de un producto (para la PDP). Cacheado (TTL corto). */
+export async function listProductReviews(
   productId: string,
 ): Promise<{ reviews: ReviewItem[]; count: number; average: number }> {
+  'use cache'
+  cacheLife('minutes')
+  cacheTag('reviews')
   try {
     const res = await medusa.client.fetch<{
       reviews: ReviewItem[]
@@ -174,9 +172,3 @@ async function fetchProductReviews(
     return { reviews: [], count: 0, average: 0 }
   }
 }
-
-/** Reseñas aprobadas + promedio de un producto (para la PDP). Cacheado (TTL corto). */
-export const listProductReviews = unstable_cache(fetchProductReviews, ['product-reviews'], {
-  revalidate: REVALIDATE_REVIEWS,
-  tags: ['reviews'],
-})

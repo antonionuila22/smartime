@@ -17,6 +17,9 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Cache Components (Next 16): habilita la directiva `'use cache'` + `cacheLife`/`cacheTag`
+  // y el Partial Prerendering (shell estático + huecos dinámicos en streaming) por defecto.
+  cacheComponents: true,
   images: {
     // Negociación de formato moderno: sirve AVIF/WebP a navegadores compatibles (imágenes
     // mucho más ligeras → mejor LCP) y cae a PNG/JPG en el resto.

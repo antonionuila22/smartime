@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Search, X } from 'lucide-react'
 
 import { ProductCard } from '@/components/ProductCard'
@@ -9,9 +9,10 @@ import { cn } from '@/utilities/ui'
 import { getCategory, listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
 
-// La página es dinámica por `searchParams` (filtros/búsqueda), pero los datos de catálogo
-// vienen de la capa CACHEADA (lib/medusa/data.ts): se renderiza al vuelo sin pagar la query
-// lenta a la DB. El filtrado por facetas se hace en memoria sobre esos datos cacheados.
+// Cache Components (PPR): la página depende de `searchParams` (filtros/búsqueda) → contenido
+// DINÁMICO que se transmite dentro de <Suspense>. El shell (skeleton) se prerenderiza y se
+// envía al instante; los resultados llegan en streaming. Los datos de catálogo salen de la
+// capa CACHEADA (lib/medusa/data.ts), así que el streaming no paga la query lenta a la DB.
 export const metadata: Metadata = {
   title: 'Tienda — smartime',
   description: 'Explora todos los productos Apple (Mac y iPhone) de smartime. Precios en Lempiras.',
@@ -33,7 +34,35 @@ type SearchParams = Promise<{
   marca?: string
 }>
 
-export default async function TiendaPage({ searchParams }: { searchParams: SearchParams }) {
+export default function TiendaPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <Suspense fallback={<TiendaSkeleton />}>
+      <TiendaResults searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+/** Shell estático mientras se resuelven los filtros y llegan los resultados. */
+function TiendaSkeleton() {
+  return (
+    <div className="container py-10">
+      <div className="mb-6 space-y-2">
+        <div className="h-9 w-48 animate-pulse rounded-lg bg-muted" />
+        <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+      </div>
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+        <div className="hidden h-96 animate-pulse rounded-2xl border bg-card lg:block" />
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="aspect-[3/4] animate-pulse rounded-xl border bg-card" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams
 
   const categories = await listCategories().catch(() => [])
