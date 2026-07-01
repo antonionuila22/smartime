@@ -1,6 +1,14 @@
 'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { medusa } from '@/lib/medusa/sdk'
 
@@ -67,14 +75,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .finally(() => setReady(true))
   }, [])
 
+  // Promesa de creación EN CURSO: si dos addItem concurrentes (o un doble clic) no encuentran
+  // carrito, ambos crearían uno y el segundo pisaría CART_KEY, huérfanando el ítem del primero.
+  // Memoizándola, el segundo reusa la misma creación → un solo carrito, sin ítems perdidos.
+  const creatingRef = useRef<Promise<string> | null>(null)
+
   const ensureCart = useCallback(async (): Promise<string> => {
     const existing = localStorage.getItem(CART_KEY)
     if (existing) return existing
-    const region_id = await getRegionId()
-    const { cart: created } = await medusa.store.cart.create({ region_id })
-    localStorage.setItem(CART_KEY, created.id)
-    setCart(created as any)
-    return created.id
+    if (creatingRef.current) return creatingRef.current
+
+    const creation = (async () => {
+      const region_id = await getRegionId()
+      const { cart: created } = await medusa.store.cart.create({ region_id })
+      localStorage.setItem(CART_KEY, created.id)
+      setCart(created as any)
+      return created.id
+    })()
+    creatingRef.current = creation
+    try {
+      return await creation
+    } finally {
+      creatingRef.current = null
+    }
   }, [])
 
   const addItem = useCallback(

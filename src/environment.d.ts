@@ -7,6 +7,8 @@ declare global {
       NEXT_PUBLIC_WHATSAPP_NUMBER: string
       NEXT_PUBLIC_PAYPAL_CLIENT_ID: string
       NEXT_PUBLIC_PAYPAL_ENVIRONMENT: string
+      /** Secreto server-side que protege /api/revalidate (invalidación de caché en tiempo real). */
+      REVALIDATE_SECRET?: string
     }
   }
 }

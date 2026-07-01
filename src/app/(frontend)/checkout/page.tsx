@@ -162,12 +162,26 @@ export default function CheckoutPage() {
 
   const onPaid = async () => {
     if (!cartId) return
-    const res: any = await completeCart(cartId)
-    if (res?.type === 'order') {
-      clear()
-      router.push(`/checkout/confirmacion?order=${res.order.id}`)
-    } else {
+    setBusy(true)
+    setError(null)
+    try {
+      const res: any = await completeCart(cartId)
+      if (res?.type === 'order') {
+        clear()
+        router.push(`/checkout/confirmacion?order=${res.order.id}`)
+        return // navegamos fuera; no reactivamos el botón
+      }
       setError(res?.error?.message || 'No pudimos confirmar el pago. Tu carrito sigue intacto.')
+      setBusy(false)
+    } catch {
+      // completeCart LANZA ante un fallo transitorio (red/500/JWT expirado) DESPUÉS de que PayPal
+      // ya capturó. El backend es idempotente y auto-compensa, así que no hay doble cobro: en vez
+      // de un callejón silencioso, dirigimos al cliente a su cuenta (donde verá el pedido si se creó).
+      setError(
+        'Tu pago se está procesando. Si no ves la confirmación en un momento, revisa "Mi cuenta" ' +
+          'antes de volver a intentarlo.',
+      )
+      setBusy(false)
     }
   }
 

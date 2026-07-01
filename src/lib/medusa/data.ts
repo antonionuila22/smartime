@@ -113,8 +113,13 @@ export async function listProducts(
   return views
 }
 
-/** Producto por handle (para la PDP). Cacheado por handle. */
-export async function getProductByHandle(handle: string): Promise<ViewProduct | null> {
+/**
+ * Producto por handle (cacheado). LANZA si no existe (o ante un fallo del backend) en vez de
+ * devolver null: `'use cache'` NO memoriza una excepción, así un "no encontrado" transitorio
+ * (p. ej. la DB tardó/falló un instante) no envenena la PDP durante todo el TTL. El caller
+ * (getProductByHandle) lo convierte en null. Un 404 real vuelve a consultar (es raro y barato).
+ */
+async function fetchProductByHandle(handle: string): Promise<ViewProduct> {
   'use cache'
   cacheLife('hours')
   cacheTag('products')
@@ -125,7 +130,7 @@ export async function getProductByHandle(handle: string): Promise<ViewProduct | 
     fields: PRODUCT_FIELDS,
     limit: 1,
   })
-  if (!products[0]) return null
+  if (!products[0]) throw new Error(`PRODUCT_NOT_FOUND:${handle}`)
   const view = toViewProduct(products[0])
   const summaries = await getReviewSummaries([view.id])
   const s = summaries[view.id]
@@ -134,6 +139,11 @@ export async function getProductByHandle(handle: string): Promise<ViewProduct | 
     view.reviewCount = s.count
   }
   return view
+}
+
+/** Producto por handle para la PDP; `null` si no existe (sin cachear el negativo). */
+export async function getProductByHandle(handle: string): Promise<ViewProduct | null> {
+  return fetchProductByHandle(handle).catch(() => null)
 }
 
 /* ----------------------------- Reseñas ----------------------------- */
