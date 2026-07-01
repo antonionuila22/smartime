@@ -10,11 +10,17 @@ import { getPayPalInstance } from '@/lib/paypalV6'
 /**
  * Botón de pago con el SDK v6 de PayPal.
  * - createInstance → findEligibleMethods → createPayPalOneTimePaymentSession.
- * - Al hacer clic, `session.start({presentationMode:'auto'}, {orderId})` abre PayPal
- *   con la orden que YA creó el backend (initiatePaymentSession). El `orderId` es el
- *   id de la orden PayPal devuelto por el provider de Medusa.
+ * - Al hacer clic, `session.start` abre PayPal con la orden que YA creó el backend
+ *   (initiatePaymentSession). El `orderId` es el id de la orden PayPal del provider.
+ * - PRESENTACIÓN: intentamos primero `'modal'` (capa embebida → el comprador NO siente que
+ *   sale del sitio), con degradación a `'popup'` y, como último recurso, `'redirect'`, por si
+ *   un navegador no puede abrir el modo preferido (p. ej. popup bloqueado). PayPal exige su
+ *   propio dominio para AUTENTICAR al comprador (no podemos loguearlo desde aquí): el modal es
+ *   lo más cercano a "pagar dentro de la tienda".
  * - `onApprove` (tras aprobar el comprador) completa el carrito (captura) en el padre.
  */
+// Orden de preferencia de presentación (mejor experiencia → más compatible).
+const PRESENTATION_MODES = ['modal', 'popup', 'redirect'] as const
 export const PayPalButton: React.FC<{
   orderId: string
   onApprove: () => Promise<void>
@@ -67,14 +73,20 @@ export const PayPalButton: React.FC<{
   const handleClick = async () => {
     if (!sessionRef.current || paying) return
     setPaying(true)
-    try {
-      await sessionRef.current.start(
-        { presentationMode: 'auto' },
-        Promise.resolve({ orderId: orderIdRef.current }),
-      )
-    } catch (e: any) {
-      setPaying(false)
-      onError?.(String(e?.message || e || 'No se pudo iniciar el pago'))
+    const order = Promise.resolve({ orderId: orderIdRef.current })
+    // Probar los modos en orden; si uno no se puede abrir, caer al siguiente.
+    for (let i = 0; i < PRESENTATION_MODES.length; i++) {
+      try {
+        await sessionRef.current.start({ presentationMode: PRESENTATION_MODES[i] }, order)
+        return
+      } catch (e: any) {
+        const isLast = i === PRESENTATION_MODES.length - 1
+        if (isLast) {
+          setPaying(false)
+          onError?.(String(e?.message || e || 'No se pudo iniciar el pago'))
+        }
+        // si no es el último, se intenta el siguiente modo de presentación
+      }
     }
   }
 
