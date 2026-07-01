@@ -7,6 +7,7 @@ import { ProductCarousel } from '@/components/ProductCarousel'
 import { BrandStrip } from '@/components/BrandStrip'
 import { CategoryGrid, type CatTile } from '@/components/CategoryGrid'
 import { PromoBanner } from '@/components/PromoBanner'
+import { RecentlyViewed } from '@/components/RecentlyViewed'
 import { TrustBand } from '@/components/TrustBand'
 import { listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
@@ -68,7 +69,7 @@ export default async function HomePage() {
       href: `/producto/macbook-air-13-m3`,
       image: bySlug('macbook-air-13-m3')!.image,
       price: bySlug('macbook-air-13-m3')!.price,
-      gradient: 'from-primary to-[#1e3a8a]',
+      gradient: 'from-[#1e3a8a] to-[#0b1220]',
     },
     bySlug('iphone-15-pro') && {
       eyebrow: 'iPhone',
@@ -78,7 +79,7 @@ export default async function HomePage() {
       href: `/producto/iphone-15-pro`,
       image: bySlug('iphone-15-pro')!.image,
       price: bySlug('iphone-15-pro')!.price,
-      gradient: 'from-[#0ea5e9] to-primary',
+      gradient: 'from-[#172554] to-[#0b1220]',
     },
     bySlug('playstation-5') && {
       eyebrow: 'Gaming',
@@ -88,7 +89,7 @@ export default async function HomePage() {
       href: `/producto/playstation-5`,
       image: bySlug('playstation-5')!.image,
       price: bySlug('playstation-5')!.price,
-      gradient: 'from-[#111827] to-[#1e3a8a]',
+      gradient: 'from-[#0b1220] to-[#1e3a8a]',
     },
     {
       eyebrow: 'Hasta 12 meses sin intereses',
@@ -98,7 +99,7 @@ export default async function HomePage() {
       href: `/tienda?oferta=1`,
       image: bySlug('smart-tv-samsung-55')?.image ?? bySlug('dyson-cordless')?.image,
       price: bySlug('smart-tv-samsung-55')?.price,
-      gradient: 'from-[#1e3a8a] to-[#2563eb]',
+      gradient: 'from-[#1e3a8a] via-[#1e40af] to-[#0b1220]',
     },
   ].filter(Boolean) as HeroSlide[]
 
@@ -113,8 +114,11 @@ export default async function HomePage() {
         <HeroCarousel slides={slides} />
         <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {PROMO_TILES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex items-center gap-3 rounded-xl border bg-card p-4">
-              <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+            <div
+              key={title}
+              className="flex items-center gap-3 rounded-2xl border bg-card p-5 shadow-sm transition-shadow duration-300 hover:shadow-md"
+            >
+              <div className="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                 <Icon className="size-5" />
               </div>
               <div>
@@ -146,6 +150,8 @@ export default async function HomePage() {
           products={items}
         />
       ))}
+
+      <RecentlyViewed />
 
       <TrustBand />
     </div>

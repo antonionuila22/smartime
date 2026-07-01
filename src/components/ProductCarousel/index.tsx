@@ -6,6 +6,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import type { ViewProduct } from '@/lib/medusa/types'
 
+import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/ProductCard'
 
 export const ProductCarousel: React.FC<{
@@ -20,32 +21,39 @@ export const ProductCarousel: React.FC<{
   const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' })
 
   return (
-    <section className="container py-8">
-      <div className="mb-5 flex items-end justify-between gap-4">
+    <section className="container py-10 md:py-12">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
         <div className="flex items-center gap-2">
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="group/link inline-flex items-center gap-1 rounded-full text-sm font-medium text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Ver todo <ArrowRight className="size-4" />
+              Ver todo
+              <ArrowRight className="size-4 transition-transform group-hover/link:translate-x-0.5" />
             </Link>
           )}
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
             onClick={() => scroll(-1)}
             aria-label="Anterior"
-            className="hidden size-9 place-items-center rounded-full border transition hover:bg-accent md:grid"
+            className="hidden rounded-full md:inline-flex"
           >
             <ChevronLeft className="size-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
             onClick={() => scroll(1)}
             aria-label="Siguiente"
-            className="hidden size-9 place-items-center rounded-full border transition hover:bg-accent md:grid"
+            className="hidden rounded-full md:inline-flex"
           >
             <ChevronRight className="size-4" />
-          </button>
+          </Button>
         </div>
       </div>
 

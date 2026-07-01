@@ -7,9 +7,11 @@ import { Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa/sdk'
+import { useCart } from '@/providers/Cart'
 
 export default function RegistroPage() {
   const router = useRouter()
+  const { count, claimForCustomer } = useCart()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,12 +45,16 @@ export default function RegistroPage() {
 
     try {
       const res = await medusa.auth.login('customer', 'emailpass', { email, password })
-      setLoading(false)
       if (typeof res !== 'string') {
+        setLoading(false)
         setError('No se pudo iniciar sesión.')
         return
       }
-      router.push('/cuenta')
+      // Conserva el carrito anónimo asociándolo a la cuenta nueva (no pierde productos).
+      await claimForCustomer()
+      setLoading(false)
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || '/cuenta'
+      router.push(redirect)
       router.refresh()
     } catch {
       setLoading(false)
@@ -59,8 +65,15 @@ export default function RegistroPage() {
   return (
     <div className="container flex justify-center py-16">
       <div className="w-full max-w-md rounded-2xl border bg-card p-8 shadow-sm">
-        <h1 className="text-2xl font-bold">Crear cuenta</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Regístrate para comprar más rápido.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Crear cuenta</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Regístrate para comprar más rápido.</p>
+
+        {count > 0 && (
+          <p className="mt-4 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
+            Tienes {count} {count === 1 ? 'producto' : 'productos'} en tu carrito — crea tu cuenta
+            para finalizar la compra sin perderlos.
+          </p>
+        )}
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="space-y-1.5">
@@ -104,7 +117,11 @@ export default function RegistroPage() {
             />
           </div>
 
-          {error && <p className="text-sm font-medium text-[#dc2626]">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+              {error}
+            </p>
+          )}
 
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading && <Loader2 className="size-4 animate-spin" />}

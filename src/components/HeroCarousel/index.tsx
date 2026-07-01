@@ -39,7 +39,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative h-[360px] overflow-hidden rounded-2xl md:h-[460px]">
+      <div className="relative h-[420px] overflow-hidden rounded-2xl md:h-[520px]">
         <div
           className="flex h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${i * 100}%)` }}
@@ -51,8 +51,10 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                 key={idx}
                 className={`relative h-full w-full shrink-0 bg-gradient-to-br ${s.gradient}`}
               >
-                {/* halo decorativo */}
+                {/* halos + viñeta para dar profundidad al fondo */}
                 <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-white/10 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full bg-white/[0.06] blur-3xl" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
                 <div className="container grid h-full grid-cols-1 items-center gap-6 md:grid-cols-2">
                   <div className="z-10 text-white md:pl-14">
                     {s.eyebrow && (
@@ -60,10 +62,10 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                         {s.eyebrow}
                       </span>
                     )}
-                    <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-tight md:text-5xl">
+                    <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight md:text-6xl">
                       {s.title}
                     </h2>
-                    <p className="mt-3 max-w-md text-base text-white/85 md:text-lg">{s.subtitle}</p>
+                    <p className="mt-4 max-w-md text-base text-white/85 md:text-lg">{s.subtitle}</p>
                     {s.price ? (
                       <p className="mt-4 text-white">
                         <span className="text-sm text-white/70">Desde </span>
@@ -76,7 +78,11 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                       </p>
                     ) : null}
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <Button asChild size="lg" variant="secondary">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="bg-white text-primary shadow-md hover:bg-white/90"
+                      >
                         <Link href={s.href}>{s.cta}</Link>
                       </Button>
                       <Button
@@ -114,14 +120,14 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
           <button
             onClick={() => go(i - 1)}
             aria-label="Anterior"
-            className="absolute left-3 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow transition hover:bg-white md:grid"
+            className="absolute left-3 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow-lg ring-1 ring-black/5 transition duration-300 hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:grid"
           >
             <ChevronLeft className="size-5" />
           </button>
           <button
             onClick={() => go(i + 1)}
             aria-label="Siguiente"
-            className="absolute right-3 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow transition hover:bg-white md:grid"
+            className="absolute right-3 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-foreground shadow-lg ring-1 ring-black/5 transition duration-300 hover:scale-105 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:grid"
           >
             <ChevronRight className="size-5" />
           </button>
@@ -132,7 +138,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                 key={idx}
                 onClick={() => go(idx)}
                 aria-label={`Ir al slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all ${idx === i ? 'w-6 bg-white' : 'w-2 bg-white/50'}`}
+                className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${idx === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`}
               />
             ))}
           </div>

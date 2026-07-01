@@ -35,6 +35,10 @@ type CartContextValue = {
   addItem: (variantId: string, qty?: number) => Promise<void>
   updateItem: (lineId: string, qty: number) => Promise<void>
   removeItem: (lineId: string) => Promise<void>
+  /** Asocia el carrito anónimo al cliente recién autenticado (no pierde productos). */
+  claimForCustomer: () => Promise<void>
+  /** Vacía el carrito local tras completar un pedido. */
+  clear: () => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -125,6 +129,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [cart],
   )
 
+  const clear = useCallback(() => {
+    try {
+      localStorage.removeItem(CART_KEY)
+    } catch {
+      /* noop */
+    }
+    setCart(null)
+  }, [])
+
+  const claimForCustomer = useCallback(async () => {
+    const id = typeof window !== 'undefined' ? localStorage.getItem(CART_KEY) : null
+    if (!id) return
+    try {
+      // transferCart asocia el carrito al customer autenticado (requiere sesión/bearer).
+      const { cart: updated } = await medusa.store.cart.transferCart(id)
+      setCart(updated as any)
+    } catch {
+      /* si falla, el carrito sigue intacto y se reintenta en el checkout */
+    }
+  }, [])
+
   const value = useMemo<CartContextValue>(() => {
     const items = cart?.items ?? []
     const count = items.reduce((s, i) => s + (i.quantity || 0), 0)
@@ -137,8 +162,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addItem,
       updateItem,
       removeItem,
+      claimForCustomer,
+      clear,
     }
-  }, [cart, ready, loading, addItem, updateItem, removeItem])
+  }, [cart, ready, loading, addItem, updateItem, removeItem, claimForCustomer, clear])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

@@ -10,11 +10,14 @@ const ITEMS = [
 
 export const TrustBand: React.FC = () => {
   return (
-    <section className="border-y bg-muted/40">
-      <div className="container grid grid-cols-2 gap-6 py-8 md:grid-cols-4">
+    <section className="border-y border-border bg-secondary/40">
+      <div className="container grid grid-cols-2 gap-4 py-10 md:grid-cols-4">
         {ITEMS.map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="flex items-center gap-3">
-            <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+          <div
+            key={title}
+            className="group flex items-center gap-3 rounded-xl border border-transparent bg-card/60 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-card hover:shadow-lg"
+          >
+            <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/15">
               <Icon className="size-5" />
             </div>
             <div>

@@ -2,8 +2,10 @@
 # (ya no desde el campo "pnpm" de package.json). Estos paquetes necesitan compilar.
 allowBuilds:
   esbuild: true
+  sharp: true
   unrs-resolver: true
 
 onlyBuiltDependencies:
   - esbuild
+  - sharp
   - unrs-resolver

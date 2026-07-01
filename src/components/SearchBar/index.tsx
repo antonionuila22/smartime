@@ -116,21 +116,21 @@ export const SearchBar: React.FC<{ className?: string }> = ({ className }) => {
       </form>
 
       {showDropdown && (
-        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border bg-background shadow-lg">
+        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
           {loading && suggestions.length === 0 ? (
             <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" /> Buscando…
             </div>
           ) : suggestions.length > 0 ? (
-            <ul className="max-h-[60vh] overflow-auto py-1">
+            <ul className="max-h-[60vh] overflow-auto p-1">
               {suggestions.map((s) => (
                 <li key={s.id}>
                   <button
                     type="button"
                     onClick={() => goProduct(s.handle)}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                   >
-                    <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded bg-white">
+                    <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-white">
                       {s.thumbnail ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={s.thumbnail} alt="" className="h-full w-full object-contain" />
@@ -147,18 +147,21 @@ export const SearchBar: React.FC<{ className?: string }> = ({ className }) => {
                   </button>
                 </li>
               ))}
-              <li className="border-t">
+              <li className="mt-1 border-t border-border pt-1">
                 <button
                   type="button"
                   onClick={goSearch}
-                  className="w-full px-3 py-2.5 text-left text-sm font-medium text-primary hover:bg-accent"
+                  className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-primary transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                 >
                   Ver todos los resultados de «{q.trim()}» →
                 </button>
               </li>
             </ul>
           ) : (
-            <div className="p-4 text-sm text-muted-foreground">Sin resultados para «{q.trim()}»</div>
+            <div className="flex flex-col items-center gap-2 p-6 text-center">
+              <Search className="size-6 text-muted-foreground/50" aria-hidden />
+              <p className="text-sm text-muted-foreground">Sin resultados para «{q.trim()}»</p>
+            </div>
           )}
         </div>
       )}

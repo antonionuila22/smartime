@@ -51,8 +51,8 @@ export const ReviewsSection: React.FC<{
           <h2 className="text-2xl font-bold">Opiniones de clientes</h2>
           {total > 0 ? (
             <div className="mt-2 flex items-center gap-3">
-              <span className="text-3xl font-bold">{avg.toFixed(1)}</span>
-              <div>
+              <span className="text-3xl font-bold tabular-nums leading-none">{avg.toFixed(1)}</span>
+              <div className="space-y-0.5">
                 <ReviewStars rating={avg} showCount={false} size="md" />
                 <p className="text-xs text-muted-foreground">
                   Basado en {total} {total === 1 ? 'opinión' : 'opiniones'}
@@ -81,8 +81,8 @@ export const ReviewsSection: React.FC<{
                   {r.first_name} {r.last_name}
                 </span>
                 {r.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[11px] font-medium text-[#16a34a]">
-                    <BadgeCheck className="size-3.5" /> Compra verificada
+                  <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">
+                    <BadgeCheck className="size-3.5" aria-hidden /> Compra verificada
                   </span>
                 )}
               </div>
@@ -163,13 +163,14 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
               type="button"
               onClick={() => setRating(i)}
               onMouseEnter={() => setHover(i)}
-              aria-label={`${i} estrellas`}
+              aria-label={`${i} ${i === 1 ? 'estrella' : 'estrellas'}`}
+              className="rounded-full p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <Star
                 className={cn(
-                  'size-6',
+                  'size-6 transition-colors',
                   i <= (hover || rating)
-                    ? 'fill-[#f59e0b] text-[#f59e0b]'
+                    ? 'fill-warning text-warning'
                     : 'fill-muted text-muted-foreground/30',
                 )}
               />
@@ -195,7 +196,7 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
         <p
           className={cn(
             'mt-3 text-sm font-medium',
-            msg.type === 'ok' ? 'text-[#16a34a]' : msg.type === 'login' ? 'text-primary' : 'text-[#dc2626]',
+            msg.type === 'ok' ? 'text-success' : msg.type === 'login' ? 'text-primary' : 'text-destructive',
           )}
         >
           {msg.text}{' '}

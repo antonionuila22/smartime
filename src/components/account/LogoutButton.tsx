@@ -23,7 +23,7 @@ export const LogoutButton: React.FC = () => {
   }
 
   return (
-    <Button variant="outline" onClick={onClick} disabled={loading}>
+    <Button variant="outline" className="rounded-full" onClick={onClick} disabled={loading}>
       <LogOut className="size-4" /> Cerrar sesión
     </Button>
   )

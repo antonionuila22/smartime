@@ -35,7 +35,11 @@ export const BuyNowButton: React.FC<{
       size="lg"
       className={className}
     >
-      {loading ? <Loader2 className="size-4 animate-spin" /> : <Zap className="size-4" />}
+      {loading ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <Zap className="size-4 fill-current" />
+      )}
       Comprar ahora
     </Button>
   )

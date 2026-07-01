@@ -38,7 +38,7 @@ export const AddToCart: React.FC<{
         variant={variant}
         aria-label="Agregar al carrito"
       >
-        {added ? <Check /> : <ShoppingCart />}
+        {added ? <Check className="animate-in zoom-in-50 duration-200" /> : <ShoppingCart />}
       </Button>
     )
   }
@@ -52,7 +52,7 @@ export const AddToCart: React.FC<{
       variant={variant}
       aria-label="Agregar al carrito"
     >
-      {added ? <Check /> : <ShoppingCart />}
+      {added ? <Check className="animate-in zoom-in-50 duration-200" /> : <ShoppingCart />}
       {added ? 'Añadido' : (label ?? 'Agregar')}
     </Button>
   )

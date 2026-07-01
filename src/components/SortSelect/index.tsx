@@ -30,7 +30,7 @@ export const SortSelect: React.FC = () => {
       <select
         value={current}
         onChange={onChange}
-        className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        className="cursor-pointer rounded-full border border-input bg-card px-4 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
       >
         {OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>

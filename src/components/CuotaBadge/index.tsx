@@ -31,9 +31,9 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
           e.stopPropagation()
           setOpen(true)
         }}
-        className="mt-0.5 inline-flex items-center gap-1 text-left text-xs text-primary hover:underline"
+        className="mt-0.5 inline-flex items-center gap-1 rounded-full text-left text-xs text-primary transition-colors hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
-        <CreditCard className="size-3.5" />o desde{' '}
+        <CreditCard className="size-3.5 shrink-0" aria-hidden />o desde{' '}
         <span className="font-semibold">{formatPrice(start.amount)}/mes</span>
         {open && <Modal table={table} onClose={() => setOpen(false)} />}
       </button>
@@ -41,10 +41,12 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
-      <div className="flex items-center gap-2 text-sm">
-        <CreditCard className="size-4 text-primary" />
-        <span>
+    <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
+      <div className="flex items-center gap-2.5 text-sm">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+          <CreditCard className="size-4" aria-hidden />
+        </span>
+        <span className="leading-snug">
           Págalo en cuotas desde{' '}
           <span className="font-bold text-primary">{formatPrice(start.amount)}/mes</span>
         </span>
@@ -52,7 +54,7 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-1 text-xs font-medium text-primary hover:underline"
+        className="mt-2 inline-flex items-center gap-1 rounded-full text-xs font-medium text-primary transition-colors hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         Ver planes de financiamiento →
       </button>
@@ -85,7 +87,7 @@ const Modal: React.FC<{
           type="button"
           onClick={onClose}
           aria-label="Cerrar"
-          className="grid size-8 place-items-center rounded-full hover:bg-accent"
+          className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <X className="size-4" />
         </button>
@@ -104,7 +106,7 @@ const Modal: React.FC<{
               <td className="py-2.5">
                 {row.months} meses
                 {row.interest === 0 && (
-                  <span className="ml-1 rounded bg-[#16a34a]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]">
+                  <span className="ml-1.5 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
                     0%
                   </span>
                 )}

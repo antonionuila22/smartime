@@ -26,14 +26,14 @@ export const WishlistButton: React.FC<{
       aria-pressed={active}
       className={cn(
         floating &&
-          'grid size-8 place-items-center rounded-full bg-background/80 text-muted-foreground backdrop-blur transition',
+          'grid size-9 place-items-center rounded-full border border-border/60 bg-background/80 text-muted-foreground shadow-sm backdrop-blur transition-all duration-200 hover:scale-105 hover:text-destructive hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-95',
         className,
       )}
     >
       <Heart
         className={cn(
-          'size-4 transition',
-          active ? 'fill-[#dc2626] text-[#dc2626]' : 'hover:text-[#dc2626]',
+          'size-4 transition-all duration-200',
+          active ? 'scale-110 fill-destructive text-destructive' : 'hover:text-destructive',
         )}
       />
     </button>

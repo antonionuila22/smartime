@@ -13,20 +13,24 @@ export const ReviewStars: React.FC<{
   const full = Math.round(rating)
   const px = size === 'md' ? 'size-4' : 'size-3.5'
   return (
-    <div className={cn('flex items-center gap-1.5', className)}>
-      <div className="flex">
+    <div
+      className={cn('flex items-center gap-1.5', className)}
+      aria-label={`Calificación ${rating.toFixed(1)} de 5`}
+    >
+      <div className="flex items-center gap-0.5">
         {[1, 2, 3, 4, 5].map((i) => (
           <Star
             key={i}
+            aria-hidden
             className={cn(
               px,
-              i <= full ? 'fill-[#f59e0b] text-[#f59e0b]' : 'fill-muted text-muted-foreground/30',
+              i <= full ? 'fill-warning text-warning' : 'fill-muted text-muted-foreground/30',
             )}
           />
         ))}
       </div>
       {showCount && (
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs font-medium tabular-nums text-muted-foreground">
           {rating.toFixed(1)}
           {typeof count === 'number' ? ` (${count})` : ''}
         </span>

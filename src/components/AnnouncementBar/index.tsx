@@ -18,14 +18,18 @@ export const AnnouncementBar: React.FC = () => {
   }, [])
 
   return (
-    <div className="bg-primary text-primary-foreground">
+    <div className="border-b border-border bg-card/70 text-foreground backdrop-blur">
       <div className="container flex h-9 items-center justify-between text-xs font-medium">
-        <span className="hidden sm:inline opacity-80">Tienda oficial de Mac y iPhone</span>
-        <span key={i} className="mx-auto animate-in fade-in duration-500 sm:mx-0 tracking-wide">
+        <span className="hidden text-muted-foreground sm:inline">Tienda oficial de Mac y iPhone</span>
+        <span key={i} className="mx-auto animate-in fade-in tracking-wide duration-500 sm:mx-0">
           {MESSAGES[i]}
         </span>
-        <a href="tel:+504" className="hidden items-center gap-1.5 opacity-90 hover:opacity-100 md:flex">
-          <Phone className="size-3.5" /> +504 0000-0000
+        <a
+          href="tel:+50494976404"
+          aria-label="Llamar al +504 9497-6404"
+          className="hidden items-center gap-1.5 rounded-full px-2 py-1 text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:flex"
+        >
+          <Phone className="size-3.5 text-primary" aria-hidden /> +504 9497-6404
         </a>
       </div>
     </div>

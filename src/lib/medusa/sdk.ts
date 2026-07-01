@@ -4,4 +4,7 @@ import Medusa from '@medusajs/js-sdk'
 export const medusa = new Medusa({
   baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000',
   publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+  // Modo JWT: tras auth.login el SDK guarda el token y lo envía como Bearer en
+  // las llamadas autenticadas (customer.retrieve, transferCart, complete…).
+  auth: { type: 'jwt' },
 })

@@ -19,7 +19,7 @@ export const CartButton: React.FC = () => {
       <span className="relative">
         <ShoppingCart className="size-5 text-primary" />
         {ready && count > 0 && (
-          <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+          <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
             {count}
           </span>
         )}

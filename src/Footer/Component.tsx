@@ -94,7 +94,7 @@ export function Footer() {
           </div>
           <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
             <p className="flex items-center gap-2">
-              <Phone className="size-4" /> +504 0000-0000
+              <Phone className="size-4" /> +504 9497-6404
             </p>
             <p className="flex items-center gap-2">
               <Mail className="size-4" /> hola@smartime.hn
@@ -109,7 +109,7 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <span>Pago seguro:</span>
             {['VISA', 'Mastercard', 'PayPal'].map((m) => (
-              <span key={m} className="rounded border bg-background px-2 py-0.5 font-medium">
+              <span key={m} className="rounded-full border bg-background px-2.5 py-0.5 font-medium">
                 {m}
               </span>
             ))}

@@ -6,6 +6,8 @@ import React from 'react'
 import { Logo } from '@/components/Logo/Logo'
 import { SearchBar } from '@/components/SearchBar'
 import { CartButton } from '@/components/Cart/CartButton'
+import { FavoritesButton } from '@/components/FavoritesButton'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { AccountButton } from '@/components/account/AccountButton'
 
 export const HeaderClient: React.FC = () => {
@@ -20,7 +22,9 @@ export const HeaderClient: React.FC = () => {
           <SearchBar className="mx-auto hidden w-full max-w-2xl md:block" />
 
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <AccountButton />
+            <FavoritesButton />
             <CartButton />
           </div>
         </div>

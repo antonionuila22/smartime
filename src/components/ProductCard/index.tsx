@@ -24,7 +24,7 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
   return (
     <div
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg',
+        'group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10',
         className,
       )}
     >
@@ -38,12 +38,12 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary/5 to-[#60a5fa]/10">
+          <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
             <PlaceholderIcon className="size-16 text-primary/30" strokeWidth={1.25} />
           </div>
         )}
         {discount && (
-          <span className="absolute left-3 top-3 rounded-full bg-[#dc2626] px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-sale px-2 py-0.5 text-xs font-bold text-sale-foreground shadow-sm">
             -{discount.percent}%
           </span>
         )}
@@ -90,16 +90,18 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
             )}
           </div>
           {discount && (
-            <span className="text-xs font-medium text-[#dc2626]">
+            <span className="text-xs font-medium text-sale">
               Ahorras {formatPrice(discount.save)}
             </span>
           )}
           <CuotaBadge price={product.price} variant="compact" />
         </div>
 
-        <span className="mt-1 text-xs font-medium text-[#16a34a]">Disponible</span>
+        <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-in-stock">
+          <span className="size-1.5 rounded-full bg-in-stock" aria-hidden /> Disponible
+        </span>
 
-        <div className="mt-3 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+        <div className="mt-3 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
           <AddToCart className="w-full" label="Agregar al carrito" variantId={product.variantId} />
         </div>
       </div>

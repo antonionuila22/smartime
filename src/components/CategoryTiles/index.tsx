@@ -21,7 +21,7 @@ export const CategoryTiles: React.FC<{
       href: '/tienda?categoria=iphone',
       icon: Smartphone,
       image: iphoneImage,
-      gradient: 'from-[#60a5fa]/15 to-[#60a5fa]/5',
+      gradient: 'from-accent to-accent/40',
     },
   ]
 
@@ -34,7 +34,7 @@ export const CategoryTiles: React.FC<{
             <Link
               key={t.title}
               href={t.href}
-              className={`group relative flex min-h-48 items-center justify-between overflow-hidden rounded-2xl border bg-gradient-to-br ${t.gradient} p-8 transition hover:shadow-lg`}
+              className={`group relative flex min-h-48 items-center justify-between overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${t.gradient} p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
             >
               <div>
                 <h3 className="text-2xl font-bold md:text-3xl">{t.title}</h3>

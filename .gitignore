@@ -1,14 +1,11 @@
 build
-dist / media
+dist
 node_modules
 .DS_Store
 .env
 .next
 next-env.d.ts
 .vercel
-
-# Payload default media upload directory
-public/media/
 
 public/robots.txt
 public/sitemap*.xml

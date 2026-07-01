@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
-import { X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 import { ProductCard } from '@/components/ProductCard'
 import { SortSelect } from '@/components/SortSelect'
@@ -104,12 +104,14 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
         </p>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
         {/* Facetas */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="space-y-6">
+          <div className="space-y-6 rounded-2xl border border-border bg-card p-5">
             <div>
-              <h3 className="mb-2 text-sm font-semibold">Categorías</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Categorías
+              </h3>
               <div className="space-y-0.5">
                 <Link href={hrefWith({ categoria: null })} className={facetLink(!activeCat)}>
                   Todas
@@ -128,7 +130,9 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
 
             {brands.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-semibold">Marca</h3>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Marca
+                </h3>
                 <div className="space-y-0.5">
                   {brands.map((b) => (
                     <Link
@@ -144,7 +148,9 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
             )}
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold">Precio</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Precio
+              </h3>
               <div className="space-y-0.5">
                 {PRICE_BUCKETS.map((b) => {
                   const active = sp.precio === b.key
@@ -162,7 +168,9 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
             </div>
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold">Ofertas</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Ofertas
+              </h3>
               <Link href={hrefWith({ oferta: sp.oferta ? null : '1' })} className={facetLink(!!sp.oferta)}>
                 Solo productos en oferta
               </Link>
@@ -171,9 +179,9 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
             {hasFilters && (
               <Link
                 href="/tienda"
-                className="inline-block text-sm font-medium text-primary hover:underline"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent"
               >
-                Limpiar filtros
+                <X className="size-3.5" /> Limpiar filtros
               </Link>
             )}
           </div>
@@ -183,11 +191,14 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
+              {chips.length > 0 && (
+                <span className="text-xs font-medium text-muted-foreground">Filtros:</span>
+              )}
               {chips.map((chip) => (
                 <Link
                   key={chip.label}
                   href={chip.href}
-                  className="inline-flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-xs font-medium hover:border-primary"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                 >
                   {chip.label}
                   <X className="size-3.5" />
@@ -204,14 +215,17 @@ export default async function TiendaPage({ searchParams }: { searchParams: Searc
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed py-20 text-center">
-              <p className="text-lg font-medium">No encontramos productos</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Prueba con otra búsqueda o quita algún filtro.
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card px-6 py-20 text-center">
+              <div className="flex size-14 items-center justify-center rounded-full bg-accent text-muted-foreground">
+                <Search className="size-6" />
+              </div>
+              <p className="mt-4 text-lg font-semibold text-foreground">No encontramos productos</p>
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                Prueba con otra búsqueda o quita algún filtro para ver más resultados.
               </p>
               <Link
                 href="/tienda"
-                className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+                className="mt-5 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Ver todo el catálogo
               </Link>
