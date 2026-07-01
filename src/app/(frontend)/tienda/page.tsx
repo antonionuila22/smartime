@@ -9,8 +9,9 @@ import { cn } from '@/utilities/ui'
 import { getCategory, listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
 
-export const dynamic = 'force-dynamic'
-
+// La página es dinámica por `searchParams` (filtros/búsqueda), pero los datos de catálogo
+// vienen de la capa CACHEADA (lib/medusa/data.ts): se renderiza al vuelo sin pagar la query
+// lenta a la DB. El filtrado por facetas se hace en memoria sobre esos datos cacheados.
 export const metadata: Metadata = {
   title: 'Tienda — smartime',
   description: 'Explora todos los productos Apple (Mac y iPhone) de smartime. Precios en Lempiras.',

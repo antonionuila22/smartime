@@ -12,7 +12,9 @@ import { TrustBand } from '@/components/TrustBand'
 import { listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
 
-export const dynamic = 'force-dynamic'
+// ISR: la home se genera estática y se revalida en segundo plano cada hora. Los datos de
+// catálogo vienen de la capa cacheada (lib/medusa/data.ts): cero queries lentas por visita.
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'smartime — Tecnología que te conecta | Honduras',

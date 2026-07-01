@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -98,12 +99,15 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
 
                   {s.image && (
                     <div className="relative hidden items-center justify-center md:flex">
-                      <div className="aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+                        <Image
                           src={s.image}
                           alt={s.title}
-                          className="h-full w-full object-contain"
+                          fill
+                          sizes="340px"
+                          // El primer slide es el LCP (above the fold) → carga prioritaria.
+                          priority={idx === 0}
+                          className="object-contain p-6"
                         />
                       </div>
                     </div>

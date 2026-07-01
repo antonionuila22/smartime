@@ -1,26 +1,51 @@
-import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
 
 import { medusa } from './sdk'
 import type { ReviewItem, ViewProduct } from './types'
 
 const PRODUCT_FIELDS = '*variants.calculated_price,*categories,*images,+thumbnail,+metadata'
 
-/** Región Honduras (HNL) — cacheada por request. */
-export const getRegionId = cache(async (): Promise<string | undefined> => {
+/**
+ * CACHÉ ISR — la DB es remota (~168ms/round-trip; un listado de productos ≈1.3s). Para que el
+ * storefront no pague esa latencia en CADA visita, los lecturas de catálogo se cachean de forma
+ * PERSISTENTE con `unstable_cache`: la query lenta se ejecuta una vez y se revalida en segundo
+ * plano cada `REVALIDATE`. Se etiquetan (`tags`) para poder invalidar bajo demanda (revalidateTag)
+ * desde un webhook del admin cuando cambien productos/precios.
+ */
+const REVALIDATE = 3600 // catálogo: 1 hora
+const REVALIDATE_REVIEWS = 600 // reseñas: 10 min
+
+/* ------------------------------- Región ------------------------------- */
+
+async function fetchRegionId(): Promise<string | undefined> {
   const { regions } = await medusa.store.region.list()
   const hn = regions.find((r) => r.currency_code === 'hnl') ?? regions[0]
   return hn?.id
+}
+
+/** Región Honduras (HNL). Cacheada (rara vez cambia). */
+export const getRegionId = unstable_cache(fetchRegionId, ['region-id'], {
+  revalidate: REVALIDATE,
+  tags: ['regions'],
 })
 
-/** Categorías de la tienda (Mac, iPhone…), cacheadas. */
-export const listCategories = cache(async () => {
+/* ------------------------------ Categorías ---------------------------- */
+
+async function fetchCategories() {
   const { product_categories } = await medusa.store.category.list({
     fields: 'id,name,handle',
     limit: 50,
   })
   return product_categories
+}
+
+/** Categorías de la tienda (Mac, iPhone…). Cacheadas. */
+export const listCategories = unstable_cache(fetchCategories, ['categories'], {
+  revalidate: REVALIDATE,
+  tags: ['categories'],
 })
 
+/** Deriva de `listCategories` (cacheada); no necesita caché propia. */
 export async function getCategory(slugOrName: string) {
   const cats = await listCategories()
   return (
@@ -32,6 +57,8 @@ export async function getCategory(slugOrName: string) {
     ) ?? null
   )
 }
+
+/* ------------------------------- Productos ---------------------------- */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function toViewProduct(p: any): ViewProduct {
@@ -61,7 +88,7 @@ export function toViewProduct(p: any): ViewProduct {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export async function listProducts(
+async function fetchProducts(
   params: { categoryId?: string; q?: string; limit?: number } = {},
 ): Promise<ViewProduct[]> {
   const region_id = await getRegionId()
@@ -84,7 +111,13 @@ export async function listProducts(
   return views
 }
 
-export async function getProductByHandle(handle: string): Promise<ViewProduct | null> {
+/** Listado de productos (con precio y reseñas). Cacheado por combinación de parámetros. */
+export const listProducts = unstable_cache(fetchProducts, ['products'], {
+  revalidate: REVALIDATE,
+  tags: ['products'],
+})
+
+async function fetchProductByHandle(handle: string): Promise<ViewProduct | null> {
   const region_id = await getRegionId()
   const { products } = await medusa.store.product.list({
     handle,
@@ -103,9 +136,16 @@ export async function getProductByHandle(handle: string): Promise<ViewProduct | 
   return view
 }
 
+/** Producto por handle (para la PDP). Cacheado por handle. */
+export const getProductByHandle = unstable_cache(fetchProductByHandle, ['product-by-handle'], {
+  revalidate: REVALIDATE,
+  tags: ['products'],
+})
+
 /* ----------------------------- Reseñas ----------------------------- */
 
-/** Resumen {average, count} por producto (para estrellas en tarjetas). */
+/** Resumen {average, count} por producto (para estrellas en tarjetas). No cacheado aparte:
+ *  se consume dentro de `listProducts`/`getProductByHandle`, que ya están cacheados. */
 export async function getReviewSummaries(
   ids: string[],
 ): Promise<Record<string, { average: number; count: number }>> {
@@ -120,8 +160,7 @@ export async function getReviewSummaries(
   }
 }
 
-/** Reseñas aprobadas + promedio de un producto (para la PDP). */
-export async function listProductReviews(
+async function fetchProductReviews(
   productId: string,
 ): Promise<{ reviews: ReviewItem[]; count: number; average: number }> {
   try {
@@ -135,3 +174,9 @@ export async function listProductReviews(
     return { reviews: [], count: 0, average: 0 }
   }
 }
+
+/** Reseñas aprobadas + promedio de un producto (para la PDP). Cacheado (TTL corto). */
+export const listProductReviews = unstable_cache(fetchProductReviews, ['product-reviews'], {
+  revalidate: REVALIDATE_REVIEWS,
+  tags: ['reviews'],
+})

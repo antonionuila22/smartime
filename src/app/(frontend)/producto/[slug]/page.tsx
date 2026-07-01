@@ -13,10 +13,11 @@ import { RecentlyViewed } from '@/components/RecentlyViewed'
 import { ReviewStars } from '@/components/ReviewStars'
 import { ReviewsSection } from '@/components/ReviewsSection'
 import { formatPrice, getDiscount } from '@/utilities/format'
-import { getProductByHandle, listProductReviews, listProducts } from '@/lib/medusa/data'
+import { getCategory, getProductByHandle, listProductReviews, listProducts } from '@/lib/medusa/data'
 import { getServerSideURL } from '@/utilities/getURL'
 
-export const dynamic = 'force-dynamic'
+// ISR: cada PDP se genera y se cachea por slug, revalidando en segundo plano cada hora.
+export const revalidate = 3600
 
 type Params = Promise<{ slug: string }>
 
@@ -32,12 +33,17 @@ export default async function ProductPage({ params }: { params: Params }) {
   const product = await getProductByHandle(slug).catch(() => null)
   if (!product) notFound()
 
-  const { reviews, count: reviewCount, average } = await listProductReviews(product.id)
-
-  // Cross-sell: productos de la misma categoría (catálogo pequeño → filtramos en memoria).
-  const related = (await listProducts({ limit: 100 }).catch(() => []))
-    .filter((p) => p.categoryName === product.categoryName && p.handle !== product.handle)
-    .slice(0, 12)
+  // Reseñas y categoría EN PARALELO (no en cascada). El cross-sell pide solo la MISMA
+  // categoría (query barata y cacheada), en vez de traer 100 productos y filtrar en memoria.
+  const [{ reviews, count: reviewCount, average }, cat0] = await Promise.all([
+    listProductReviews(product.id),
+    product.categoryName ? getCategory(product.categoryName) : Promise.resolve(null),
+  ])
+  const related = cat0
+    ? (await listProducts({ categoryId: cat0.id, limit: 13 }).catch(() => []))
+        .filter((p) => p.handle !== product.handle)
+        .slice(0, 12)
+    : []
 
   const discount = getDiscount(product.price, product.originalPrice)
   const cat = product.categoryName ?? ''

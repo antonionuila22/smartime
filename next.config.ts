@@ -18,12 +18,18 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
+    // Negociación de formato moderno: sirve AVIF/WebP a navegadores compatibles (imágenes
+    // mucho más ligeras → mejor LCP) y cae a PNG/JPG en el resto.
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      // El catálogo (seed) enlaza imágenes de CDNs externos variados (Amazon, Apple, Wikimedia…).
+      // Se permite cualquier host HTTPS para no romper next/image.
+      // PRODUCCIÓN: sirve las imágenes desde tu propio backend/CDN (subidas a Medusa) y
+      // restringe esto al dominio real (p. ej. { hostname: 'cdn.smartime.hn' }) para evitar
+      // usar el optimizador como proxy abierto.
+      { protocol: 'https', hostname: '**' },
       // Backend Medusa en local (imágenes servidas desde /static).
       { protocol: 'http', hostname: 'localhost' },
-      // TODO: añade aquí el dominio real del backend/CDN en producción, p. ej.:
-      // { protocol: 'https', hostname: 'api.smartime.hn' },
     ],
   },
   reactStrictMode: true,

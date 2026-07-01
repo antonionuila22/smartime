@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { Laptop, Package, Smartphone } from 'lucide-react'
@@ -28,14 +29,14 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
         className,
       )}
     >
-      <Link href={href} className="relative block aspect-square overflow-hidden bg-white p-4">
+      <Link href={href} className="relative block aspect-square overflow-hidden bg-white">
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={product.image}
             alt={product.title}
-            loading="lazy"
-            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
