@@ -117,7 +117,12 @@ export default function CuentaPage() {
                   <li key={order.id} className="rounded-2xl border bg-card p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold">Pedido #{order.display_id}</p>
+                        <Link
+                          href={`/cuenta/pedidos/${order.id}`}
+                          className="font-semibold transition-colors hover:text-primary"
+                        >
+                          Pedido #{order.display_id}
+                        </Link>
                         <p className="text-xs text-muted-foreground">
                           {dateFmt.format(new Date(order.created_at))} · {itemCount}{' '}
                           {itemCount === 1 ? 'artículo' : 'artículos'}

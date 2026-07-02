@@ -57,11 +57,17 @@ export default function CheckoutPage() {
   const cartId: string | undefined = miniCart?.id
 
   // Gate de cuenta + vinculación + carga del carrito de checkout.
+  // La DB del backend es remota (~170ms/round-trip), así que el arranque se hace en DOS OLAS
+  // paralelas en vez de 4 llamadas en cascada: (1) identidad ∥ carrito, (2) vínculo ∥ proveedores.
   useEffect(() => {
     if (!cartReady) return
     let active = true
     ;(async () => {
-      const customer = await getCustomerOrNull()
+      // Ola 1: quién es el cliente y el carrito, EN PARALELO (independientes entre sí).
+      const [customer, ckRaw] = await Promise.all([
+        getCustomerOrNull(),
+        cartId ? retrieveCheckoutCart(cartId).catch(() => null) : Promise.resolve(null),
+      ])
       if (!active) return
       if (!customer) {
         router.replace('/registro?redirect=/checkout')
@@ -72,9 +78,8 @@ export default function CheckoutPage() {
         return
       }
       try {
-        await bindCartToCustomer(cartId, customer.email)
-        const ck: any = await retrieveCheckoutCart(cartId)
-        if (!active) return
+        const ck = ckRaw as any
+        if (!ck) throw new Error('No se pudo cargar tu carrito. Recarga la página.')
         setCart(ck)
         // Prefill de dirección con datos del cliente / dirección previa.
         const prev = ck.shipping_address
@@ -90,7 +95,13 @@ export default function CheckoutPage() {
           postal_code: prev?.postal_code || '',
           country_code: 'hn',
         })
-        const provs = await listPaymentProviders(ck.region_id)
+        // Ola 2: vincular carrito↔cliente y listar proveedores de pago, EN PARALELO
+        // (el vínculo solo necesita estar hecho antes de iniciar el pago, no antes de pintar).
+        const [, provs] = await Promise.all([
+          bindCartToCustomer(cartId, customer.email),
+          listPaymentProviders(ck.region_id),
+        ])
+        if (!active) return
         const paypal = provs.find((p: any) => /paypal/i.test(p.id))
         setProviderId(paypal?.id ?? null)
       } catch (e: any) {
