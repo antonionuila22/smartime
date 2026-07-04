@@ -6,6 +6,7 @@ import { Loader2, Zap } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/providers/Cart'
+import { cn } from '@/utilities/ui'
 
 /** "Comprar ahora": agrega al carrito y va directo al checkout. */
 export const BuyNowButton: React.FC<{
@@ -32,8 +33,9 @@ export const BuyNowButton: React.FC<{
       onClick={handle}
       disabled={!variantId || loading}
       variant="outline"
-      size="lg"
-      className={className}
+      size="xl"
+      // Misma altura que "Agregar al carrito" (xl) para que el par de CTAs quede alineado
+      className={cn('transition duration-300 hover:border-primary/40', className)}
     >
       {loading ? (
         <Loader2 className="size-4 animate-spin" />

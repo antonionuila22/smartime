@@ -92,7 +92,10 @@ export const PayPalButton: React.FC<{
 
   if (eligible === false) {
     return (
-      <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+      <p
+        role="alert"
+        className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+      >
         PayPal no está disponible en este momento. Inténtalo de nuevo o contáctanos.
       </p>
     )
@@ -104,7 +107,7 @@ export const PayPalButton: React.FC<{
       onClick={handleClick}
       disabled={!ready || paying}
       aria-busy={paying}
-      className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ffc439] font-bold text-[#003087] shadow-sm transition hover:bg-[#f0b72f] active:scale-[0.99] disabled:opacity-60"
+      className="flex h-12 w-full select-none items-center justify-center gap-2 rounded-full bg-[#ffc439] font-bold text-[#003087] transition duration-300 hover:bg-[#f0b72f] hover:shadow-lg hover:shadow-[#ffc439]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none"
     >
       {paying ? (
         <>

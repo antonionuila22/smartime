@@ -14,6 +14,7 @@ export const ReviewStars: React.FC<{
   const px = size === 'md' ? 'size-4' : 'size-3.5'
   return (
     <div
+      role="img"
       className={cn('flex items-center gap-1.5', className)}
       aria-label={`Calificación ${rating.toFixed(1)} de 5`}
     >

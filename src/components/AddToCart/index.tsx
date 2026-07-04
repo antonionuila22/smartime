@@ -50,8 +50,8 @@ export const AddToCart: React.FC<{
       className={className}
       size={size}
       variant={variant}
-      aria-label="Agregar al carrito"
     >
+      {/* El texto visible es el nombre accesible: así el lector anuncia «Añadido» al confirmar */}
       {added ? <Check className="animate-in zoom-in-50 duration-200" /> : <ShoppingCart />}
       {added ? 'Añadido' : (label ?? 'Agregar')}
     </Button>

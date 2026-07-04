@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
-import { Loader2, Search } from 'lucide-react'
+import { ArrowRight, Loader2, Search, SearchX } from 'lucide-react'
 
 import { medusa } from '@/lib/medusa/sdk'
 import { useDebounce } from '@/utilities/useDebounce'
@@ -103,12 +103,12 @@ export const SearchBar: React.FC<{ className?: string }> = ({ className }) => {
             placeholder="Buscar Mac, iPhone, accesorios…"
             aria-label="Buscar productos"
             autoComplete="off"
-            className="h-12 w-full rounded-full border border-input bg-background pl-5 pr-14 text-sm outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+            className="h-12 w-full rounded-full border border-input bg-background pl-5 pr-14 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/40"
           />
           <button
             type="submit"
             aria-label="Buscar"
-            className="absolute right-1.5 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 active:scale-95"
+            className="absolute right-1.5 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground transition duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95"
           >
             <Search className="size-4" />
           </button>
@@ -116,51 +116,59 @@ export const SearchBar: React.FC<{ className?: string }> = ({ className }) => {
       </form>
 
       {showDropdown && (
-        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+        <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
           {loading && suggestions.length === 0 ? (
-            <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Buscando…
+            <div className="flex items-center gap-2.5 px-4 py-4 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin text-primary" aria-hidden /> Buscando…
             </div>
           ) : suggestions.length > 0 ? (
-            <ul className="max-h-[60vh] overflow-auto p-1">
+            <ul className="max-h-[60vh] overflow-auto p-1.5">
               {suggestions.map((s) => (
                 <li key={s.id}>
                   <button
                     type="button"
                     onClick={() => goProduct(s.handle)}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors duration-300 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
                   >
                     <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-white">
                       {s.thumbnail ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={s.thumbnail} alt="" className="h-full w-full object-contain" />
                       ) : (
-                        <Search className="size-4 text-muted-foreground" />
+                        <Search className="size-4 text-muted-foreground" aria-hidden />
                       )}
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">{s.title}</span>
                       {s.category && (
-                        <span className="block text-xs text-muted-foreground">{s.category}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {s.category}
+                        </span>
                       )}
                     </span>
                   </button>
                 </li>
               ))}
-              <li className="mt-1 border-t border-border pt-1">
+              <li className="mt-1.5 border-t border-border pt-1.5">
                 <button
                   type="button"
                   onClick={goSearch}
-                  className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-primary transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-primary transition-colors duration-300 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
                 >
-                  Ver todos los resultados de «{q.trim()}» →
+                  <span className="truncate">Ver todos los resultados de «{q.trim()}»</span>
+                  <ArrowRight className="size-4 shrink-0" aria-hidden />
                 </button>
               </li>
             </ul>
           ) : (
-            <div className="flex flex-col items-center gap-2 p-6 text-center">
-              <Search className="size-6 text-muted-foreground/50" aria-hidden />
-              <p className="text-sm text-muted-foreground">Sin resultados para «{q.trim()}»</p>
+            <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
+              <span className="grid size-11 place-items-center rounded-full border border-border bg-background">
+                <SearchX className="size-5 text-muted-foreground/70" aria-hidden />
+              </span>
+              <p className="text-sm font-medium">Sin resultados para «{q.trim()}»</p>
+              <p className="text-xs text-muted-foreground">
+                Prueba con otra palabra, por ejemplo «MacBook» o «iPhone».
+              </p>
             </div>
           )}
         </div>

@@ -14,7 +14,7 @@ interface Props {
  */
 export const Logo = ({ className, showTagline = false }: Props) => {
   return (
-    <span className={clsx('inline-flex items-center gap-2.5', className)}>
+    <span className={clsx('inline-flex select-none items-center gap-2.5', className)}>
       {/* Monograma ST */}
       <span className="relative inline-grid size-9 shrink-0 place-items-center">
         <svg

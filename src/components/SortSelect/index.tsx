@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
+import { ChevronDown } from 'lucide-react'
 
 const OPTIONS = [
   { value: 'relevancia', label: 'Relevancia' },
@@ -27,17 +28,25 @@ export const SortSelect: React.FC = () => {
   return (
     <label className="flex items-center gap-2 text-sm">
       <span className="hidden text-muted-foreground sm:inline">Ordenar:</span>
-      <select
-        value={current}
-        onChange={onChange}
-        className="cursor-pointer rounded-full border border-input bg-card px-4 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:border-primary/40 hover:bg-accent focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
-      >
-        {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+      {/* Flecha propia (appearance-none) para que el select respete el tema oscuro */}
+      <span className="relative inline-flex items-center">
+        <select
+          value={current}
+          onChange={onChange}
+          aria-label="Ordenar productos"
+          className="cursor-pointer appearance-none rounded-full border border-input bg-card py-2 pl-4 pr-9 text-sm font-medium text-foreground outline-none transition-colors duration-300 hover:border-primary/40 hover:bg-accent focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          {OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+      </span>
     </label>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { LogOut } from 'lucide-react'
+import { Loader2, LogOut } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa/sdk'
@@ -24,7 +24,12 @@ export const LogoutButton: React.FC = () => {
 
   return (
     <Button variant="outline" className="rounded-full" onClick={onClick} disabled={loading}>
-      <LogOut className="size-4" /> Cerrar sesión
+      {loading ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+      ) : (
+        <LogOut className="size-4" aria-hidden="true" />
+      )}
+      Cerrar sesión
     </Button>
   )
 }

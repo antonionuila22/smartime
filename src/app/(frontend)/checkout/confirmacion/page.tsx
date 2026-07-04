@@ -36,20 +36,30 @@ export default function ConfirmacionPage() {
 
   if (state === 'loading') {
     return (
-      <div className="container grid min-h-[50vh] place-items-center py-20">
-        <Loader2 className="size-8 animate-spin text-primary" />
+      <div className="container grid min-h-[50vh] place-items-center py-12 md:py-16">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="size-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Confirmando tu pedido…</p>
+        </div>
       </div>
     )
   }
 
   if (state === 'error' || !order) {
     return (
-      <div className="container py-20 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">No encontramos el pedido</h1>
-        <p className="mt-2 text-muted-foreground">Revisa tus pedidos en tu cuenta.</p>
-        <Button asChild size="lg" className="mt-6">
-          <Link href="/cuenta">Ir a mi cuenta</Link>
-        </Button>
+      <div className="container py-12 md:py-16">
+        <div className="mx-auto max-w-md rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
+          <div className="mx-auto grid size-16 place-items-center rounded-full bg-muted text-muted-foreground">
+            <Package className="size-8" strokeWidth={1.5} />
+          </div>
+          <h1 className="mt-5 text-2xl font-bold tracking-tight">No encontramos el pedido</h1>
+          <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
+            Revisa tus pedidos en tu cuenta.
+          </p>
+          <Button asChild size="lg" className="mt-6 rounded-full">
+            <Link href="/cuenta">Ir a mi cuenta</Link>
+          </Button>
+        </div>
       </div>
     )
   }
@@ -69,25 +79,31 @@ export default function ConfirmacionPage() {
     etaForMethodName(method?.name, created)
 
   return (
-    <div className="container max-w-2xl py-12">
-      <div className="rounded-2xl border bg-card p-8 text-center">
-        <div className="mx-auto grid size-16 place-items-center rounded-full bg-in-stock/10 text-in-stock">
-          <CheckCircle2 className="size-9" />
+    <div className="container max-w-2xl py-12 md:py-16">
+      <div className="rounded-2xl border border-border bg-card p-8 text-center md:p-10">
+        <div className="mx-auto grid size-16 place-items-center rounded-full bg-in-stock/10 text-in-stock ring-8 ring-in-stock/5">
+          <CheckCircle2 className="size-8" strokeWidth={1.75} />
         </div>
-        <h1 className="mt-5 text-2xl md:text-3xl font-bold tracking-tight">¡Gracias por tu compra!</h1>
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-in-stock">
+          Pedido confirmado
+        </p>
+        <h1 className="mt-1 text-2xl md:text-3xl font-bold tracking-tight">
+          ¡Gracias por tu compra!
+        </h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground md:text-base">
           Tu pedido <span className="font-semibold text-foreground">#{order.display_id}</span> está
-          confirmado. Te enviamos un correo a {order.email}.
+          confirmado. Te enviamos un correo a{' '}
+          <span className="font-medium text-foreground">{order.email}</span>.
         </p>
         {eta && (
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
-            <Package className="size-4" /> {eta.label}
+          <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-sm font-medium text-primary">
+            <Package className="size-4" aria-hidden="true" /> {eta.label}
           </p>
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border bg-card p-6">
-        <h2 className="text-lg font-semibold">Resumen</h2>
+      <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold tracking-tight">Resumen del pedido</h2>
         <ul className="mt-4 space-y-3 text-sm">
           {(order.items ?? []).map((item: any) => (
             <li key={item.id} className="flex justify-between gap-3">
@@ -95,26 +111,44 @@ export default function ConfirmacionPage() {
                 {item.product_title || item.title}
                 {item.quantity > 1 ? ` × ${item.quantity}` : ''}
               </span>
-              <span className="shrink-0 font-medium">{formatPrice(item.total)}</span>
+              <span className="shrink-0 font-medium tabular-nums">{formatPrice(item.total)}</span>
             </li>
           ))}
         </ul>
-        {method && (
-          <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">
-            Envío: <span className="font-medium text-foreground">{method.name}</span>
-          </p>
-        )}
-        <div className="mt-2 flex items-baseline justify-between border-t pt-4 font-bold">
-          <span>Total</span>
-          <span className="text-xl">{formatPrice(order.total)}</span>
+        <dl className="mt-4 space-y-2.5 border-t border-border pt-4 text-sm">
+          {order.subtotal != null && (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Subtotal</dt>
+              <dd className="font-medium tabular-nums">{formatPrice(order.subtotal)}</dd>
+            </div>
+          )}
+          {method && (
+            <div className="flex justify-between gap-4">
+              <dt className="min-w-0 truncate text-muted-foreground">
+                Envío · <span className="text-foreground">{method.name}</span>
+              </dt>
+              <dd
+                className={`shrink-0 font-medium tabular-nums ${
+                  (order.shipping_total ?? 0) > 0 ? '' : 'text-in-stock'
+                }`}
+              >
+                {(order.shipping_total ?? 0) > 0 ? formatPrice(order.shipping_total) : 'Gratis'}
+              </dd>
+            </div>
+          )}
+        </dl>
+        <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
+          <span className="text-base font-bold">Total</span>
+          <span className="text-xl font-bold tabular-nums">{formatPrice(order.total)}</span>
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">ISV incluido en el precio.</p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button asChild size="lg" className="flex-1">
+        <Button asChild size="lg" className="flex-1 rounded-full">
           <Link href="/cuenta">Ver mis pedidos</Link>
         </Button>
-        <Button asChild size="lg" variant="outline" className="flex-1">
+        <Button asChild size="lg" variant="outline" className="flex-1 rounded-full">
           <Link href="/tienda">Seguir comprando</Link>
         </Button>
       </div>

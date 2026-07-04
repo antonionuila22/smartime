@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CreditCard, X } from 'lucide-react'
+import { ArrowRight, CreditCard, X } from 'lucide-react'
 
 import { cn } from '@/utilities/ui'
 import { formatPrice } from '@/utilities/format'
@@ -24,19 +24,22 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
 
   if (variant === 'compact') {
     return (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setOpen(true)
-        }}
-        className="mt-0.5 inline-flex items-center gap-1 rounded-full text-left text-xs text-primary transition-colors hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-      >
-        <CreditCard className="size-3.5 shrink-0" aria-hidden />o desde{' '}
-        <span className="font-semibold">{formatPrice(start.amount)}/mes</span>
+      <>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpen(true)
+          }}
+          className="mt-0.5 flex flex-wrap items-center gap-x-1 rounded-full text-left text-xs text-primary transition-colors duration-300 hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <CreditCard className="size-3.5 shrink-0" aria-hidden />o desde{' '}
+          <span className="font-semibold tabular-nums">{formatPrice(start.amount)}/mes</span>
+        </button>
+        {/* El modal vive fuera del <button> para evitar controles interactivos anidados */}
         {open && <Modal table={table} onClose={() => setOpen(false)} />}
-      </button>
+      </>
     )
   }
 
@@ -48,15 +51,19 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
         </span>
         <span className="leading-snug">
           Págalo en cuotas desde{' '}
-          <span className="font-bold text-primary">{formatPrice(start.amount)}/mes</span>
+          <span className="font-bold tabular-nums text-primary">{formatPrice(start.amount)}/mes</span>
         </span>
       </div>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 inline-flex items-center gap-1 rounded-full text-xs font-medium text-primary transition-colors hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="group/cuota mt-2 inline-flex items-center gap-1 rounded-full text-xs font-medium text-primary transition-colors duration-300 hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
-        Ver planes de financiamiento →
+        Ver planes de financiamiento
+        <ArrowRight
+          className="size-3.5 transition-transform duration-300 group-hover/cuota:translate-x-0.5"
+          aria-hidden
+        />
       </button>
       <p className="mt-1 text-[11px] text-muted-foreground">
         0% interés con tarjetas participantes · sujeto a aprobación
@@ -71,18 +78,21 @@ const Modal: React.FC<{
   onClose: () => void
 }> = ({ table, onClose }) => (
   <div
-    className="fixed inset-0 z-[60] grid place-items-center bg-black/50 p-4"
+    className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
     onClick={(e) => {
       e.stopPropagation()
       onClose()
     }}
   >
     <div
-      className="w-full max-w-sm rounded-2xl bg-background p-6 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Planes de cuotas"
+      className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold">Planes de cuotas</h3>
+        <h3 className="text-lg font-bold tracking-tight">Planes de cuotas</h3>
         <button
           type="button"
           onClick={onClose}
@@ -94,7 +104,7 @@ const Modal: React.FC<{
       </div>
       <table className="mt-4 w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-muted-foreground">
+          <tr className="border-b border-border text-left text-muted-foreground">
             <th className="pb-2 font-medium">Plazo</th>
             <th className="pb-2 text-right font-medium">Cuota/mes</th>
             <th className="pb-2 text-right font-medium">Total</th>
@@ -102,7 +112,7 @@ const Modal: React.FC<{
         </thead>
         <tbody>
           {table.map((row) => (
-            <tr key={row.months} className="border-b last:border-0">
+            <tr key={row.months} className="border-b border-border last:border-0">
               <td className="py-2.5">
                 {row.months} meses
                 {row.interest === 0 && (
@@ -111,8 +121,12 @@ const Modal: React.FC<{
                   </span>
                 )}
               </td>
-              <td className="py-2.5 text-right font-semibold">{formatPrice(row.monthly)}</td>
-              <td className="py-2.5 text-right text-muted-foreground">{formatPrice(row.total)}</td>
+              <td className="py-2.5 text-right font-semibold tabular-nums">
+                {formatPrice(row.monthly)}
+              </td>
+              <td className="py-2.5 text-right tabular-nums text-muted-foreground">
+                {formatPrice(row.total)}
+              </td>
             </tr>
           ))}
         </tbody>

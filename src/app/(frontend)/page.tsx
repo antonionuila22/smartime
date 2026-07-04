@@ -112,20 +112,21 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <section className="container pt-6">
+      <section className="container pt-6 md:pt-8">
         <HeroCarousel slides={slides} />
-        <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Beneficios rápidos bajo el hero: sombra solo en hover para mantener el fondo limpio */}
+        <div className="mt-4 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
           {PROMO_TILES.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="flex items-center gap-3 rounded-2xl border bg-card p-5 shadow-sm transition-shadow duration-300 hover:shadow-md"
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-md md:p-5"
             >
-              <div className="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary md:size-12">
                 <Icon className="size-5" />
               </div>
               <div>
                 <p className="text-sm font-semibold leading-tight">{title}</p>
-                <p className="text-xs text-muted-foreground">{desc}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
               </div>
             </div>
           ))}
@@ -137,7 +138,7 @@ export default async function HomePage() {
       <CategoryGrid categories={catTiles} />
 
       {ofertas.length > 0 && (
-        <ProductCarousel title="🔥 Ofertas de la semana" viewAllHref="/tienda?oferta=1" products={ofertas} />
+        <ProductCarousel title="Ofertas de la semana" viewAllHref="/tienda?oferta=1" products={ofertas} />
       )}
 
       <ProductCarousel title="Destacados" viewAllHref="/tienda" products={featured} />

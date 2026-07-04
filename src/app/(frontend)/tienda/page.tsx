@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React, { Suspense } from 'react'
-import { Search, X } from 'lucide-react'
+import { Check, Search, SlidersHorizontal, X } from 'lucide-react'
 
 import { ProductCard } from '@/components/ProductCard'
 import { SortSelect } from '@/components/SortSelect'
@@ -45,16 +45,17 @@ export default function TiendaPage({ searchParams }: { searchParams: SearchParam
 /** Shell estático mientras se resuelven los filtros y llegan los resultados. */
 function TiendaSkeleton() {
   return (
-    <div className="container py-10">
+    <div className="container py-10 md:py-12">
       <div className="mb-6 space-y-2">
+        <div className="h-3 w-20 animate-pulse rounded-full bg-muted" />
         <div className="h-9 w-48 animate-pulse rounded-lg bg-muted" />
         <div className="h-4 w-28 animate-pulse rounded bg-muted" />
       </div>
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-        <div className="hidden h-96 animate-pulse rounded-2xl border bg-card lg:block" />
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+        <div className="hidden h-96 animate-pulse rounded-2xl border border-border bg-card lg:block" />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-[3/4] animate-pulse rounded-xl border bg-card" />
+            <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl border border-border bg-card" />
           ))}
         </div>
       </div>
@@ -120,105 +121,126 @@ async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
 
   const facetLink = (active: boolean) =>
     cn(
-      'block rounded-lg px-3 py-1.5 text-sm transition-colors',
-      active ? 'bg-primary/10 font-semibold text-primary' : 'text-muted-foreground hover:bg-accent',
+      'flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-sm transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+      active
+        ? 'bg-primary/10 font-semibold text-primary'
+        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
     )
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 md:py-12">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
+        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Catálogo</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
         <p className="mt-1 text-muted-foreground">
-          {products.length} producto{products.length === 1 ? '' : 's'}
+          <span className="tabular-nums">{products.length}</span> producto
+          {products.length === 1 ? '' : 's'}
           {sp.q ? ` para «${sp.q}»` : ''}
         </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-        {/* Facetas */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="space-y-6 rounded-2xl border border-border bg-card p-5">
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Categorías
-              </h3>
-              <div className="space-y-0.5">
-                <Link href={hrefWith({ categoria: null })} className={facetLink(!activeCat)}>
-                  Todas
-                </Link>
-                {categories.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={hrefWith({ categoria: c.handle ?? c.id })}
-                    className={facetLink(activeCat?.id === c.id)}
-                  >
-                    {c.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
+        {/* Facetas — en móvil van después de los resultados para no empujarlos bajo el fold */}
+        <aside className="order-2 lg:order-1 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+              <SlidersHorizontal className="size-4 text-muted-foreground" aria-hidden />
+              Filtros
+            </h2>
 
-            {brands.length > 0 && (
-              <div>
+            <div className="mt-4 divide-y divide-border">
+              <section className="pb-5">
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Marca
+                  Categorías
                 </h3>
                 <div className="space-y-0.5">
-                  {brands.map((b) => (
+                  <Link href={hrefWith({ categoria: null })} className={facetLink(!activeCat)}>
+                    Todas
+                    {!activeCat && <Check className="size-3.5 shrink-0" aria-hidden />}
+                  </Link>
+                  {categories.map((c) => (
                     <Link
-                      key={b}
-                      href={hrefWith({ marca: sp.marca === b ? null : b })}
-                      className={facetLink(sp.marca === b)}
+                      key={c.id}
+                      href={hrefWith({ categoria: c.handle ?? c.id })}
+                      className={facetLink(activeCat?.id === c.id)}
                     >
-                      {b}
+                      {c.name}
+                      {activeCat?.id === c.id && <Check className="size-3.5 shrink-0" aria-hidden />}
                     </Link>
                   ))}
                 </div>
-              </div>
-            )}
+              </section>
 
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Precio
-              </h3>
-              <div className="space-y-0.5">
-                {PRICE_BUCKETS.map((b) => {
-                  const active = sp.precio === b.key
-                  return (
-                    <Link
-                      key={b.key}
-                      href={hrefWith({ precio: active ? null : b.key })}
-                      className={facetLink(active)}
-                    >
-                      {b.label}
-                    </Link>
-                  )
-                })}
-              </div>
+              {brands.length > 0 && (
+                <section className="py-5">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Marca
+                  </h3>
+                  <div className="space-y-0.5">
+                    {brands.map((b) => (
+                      <Link
+                        key={b}
+                        href={hrefWith({ marca: sp.marca === b ? null : b })}
+                        className={facetLink(sp.marca === b)}
+                      >
+                        {b}
+                        {sp.marca === b && <Check className="size-3.5 shrink-0" aria-hidden />}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <section className="py-5">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Precio
+                </h3>
+                <div className="space-y-0.5">
+                  {PRICE_BUCKETS.map((b) => {
+                    const active = sp.precio === b.key
+                    return (
+                      <Link
+                        key={b.key}
+                        href={hrefWith({ precio: active ? null : b.key })}
+                        className={facetLink(active)}
+                      >
+                        {b.label}
+                        {active && <Check className="size-3.5 shrink-0" aria-hidden />}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </section>
+
+              <section className="py-5 last:pb-0">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Ofertas
+                </h3>
+                <Link
+                  href={hrefWith({ oferta: sp.oferta ? null : '1' })}
+                  className={facetLink(!!sp.oferta)}
+                >
+                  Solo productos en oferta
+                  {!!sp.oferta && <Check className="size-3.5 shrink-0" aria-hidden />}
+                </Link>
+              </section>
+
+              {hasFilters && (
+                <div className="pt-5">
+                  <Link
+                    href="/tienda"
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-medium text-primary transition-colors duration-300 hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <X className="size-3.5" aria-hidden /> Limpiar filtros
+                  </Link>
+                </div>
+              )}
             </div>
-
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Ofertas
-              </h3>
-              <Link href={hrefWith({ oferta: sp.oferta ? null : '1' })} className={facetLink(!!sp.oferta)}>
-                Solo productos en oferta
-              </Link>
-            </div>
-
-            {hasFilters && (
-              <Link
-                href="/tienda"
-                className="flex items-center justify-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent"
-              >
-                <X className="size-3.5" /> Limpiar filtros
-              </Link>
-            )}
           </div>
         </aside>
 
         {/* Resultados */}
-        <div>
+        <div className="order-1 lg:order-2">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               {chips.length > 0 && (
@@ -228,10 +250,11 @@ async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
                 <Link
                   key={chip.label}
                   href={chip.href}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                  aria-label={`Quitar filtro ${chip.label}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors duration-300 hover:border-primary/40 hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                   {chip.label}
-                  <X className="size-3.5" />
+                  <X className="size-3.5" aria-hidden />
                 </Link>
               ))}
             </div>
@@ -239,7 +262,7 @@ async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
           </div>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -247,7 +270,7 @@ async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
           ) : (
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card px-6 py-20 text-center">
               <div className="flex size-14 items-center justify-center rounded-full bg-accent text-muted-foreground">
-                <Search className="size-6" />
+                <Search className="size-6" aria-hidden />
               </div>
               <p className="mt-4 text-lg font-semibold text-foreground">No encontramos productos</p>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
@@ -255,7 +278,7 @@ async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
               </p>
               <Link
                 href="/tienda"
-                className="mt-5 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="mt-5 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors duration-300 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Ver todo el catálogo
               </Link>

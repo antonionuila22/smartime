@@ -19,8 +19,15 @@ import { getServerSideURL } from '@/utilities/getURL'
 // Cache Components: prerenderizamos cada PDP por slug. `generateStaticParams` da las muestras
 // (los handles del catálogo) para que `params` sea estático; los datos vienen de la capa
 // cacheada. Slugs nuevos se renderizan on-demand y se cachean.
+//
+// IMPORTANTE (Cache Components): esta función DEBE devolver ≥1 resultado o Next lanza
+// EmptyGenerateStaticParamsError y rompe TODA la ruta. Por eso, si el backend está caído
+// un instante y el catálogo llega vacío, devolvemos un slug centinela que la propia página
+// resuelve a notFound() (getProductByHandle → null). Así un hipo del backend degrada a un
+// 404 aislado en vez de tumbar /producto/*.
 export async function generateStaticParams() {
   const products = await listProducts({ limit: 100 }).catch(() => [])
+  if (products.length === 0) return [{ slug: '__placeholder__' }]
   return products.map((p) => ({ slug: p.handle }))
 }
 
@@ -88,53 +95,61 @@ export default async function ProductPage({ params }: { params: Params }) {
 
   return (
     <>
-    <div className="container py-10">
+    <div className="container py-8 md:py-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
+      {/* Volver discreto: flecha con micro-desplazamiento en hover */}
       <Link
         href="/tienda"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="group mb-6 inline-flex items-center gap-1.5 rounded-full text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
-        <ArrowLeft className="size-4" /> Volver a la tienda
+        <ArrowLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-0.5" />{' '}
+        Volver a la tienda
       </Link>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
         <ProductGallery images={images} title={product.title} kind={kind} />
 
         <div className="flex flex-col lg:sticky lg:top-24 lg:self-start">
           <div className="flex flex-wrap items-center gap-2">
             {product.brand && (
-              <span className="text-xs font-bold uppercase tracking-wide text-primary">
+              <span className="text-xs font-semibold uppercase tracking-wide text-primary">
                 {product.brand}
               </span>
             )}
             {cat && (
               <Link
                 href={`/tienda?categoria=${encodeURIComponent(cat)}`}
-                className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-medium text-muted-foreground transition hover:text-primary"
+                className="inline-flex rounded-full border border-border bg-accent px-3 py-1 text-xs font-medium text-muted-foreground transition duration-300 hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 {cat}
               </Link>
             )}
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{product.title}</h1>
+          <h1 className="mt-3 font-serif text-3xl font-bold tracking-tight sm:text-4xl">
+            {product.title}
+          </h1>
 
           {reviewCount > 0 && (
-            <a href="#reviews" className="mt-2.5 inline-flex w-fit items-center gap-2 hover:underline">
+            <a
+              href="#reviews"
+              className="mt-2.5 inline-flex w-fit items-center gap-2 rounded-full hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
               <ReviewStars rating={average} count={reviewCount} />
             </a>
           )}
 
-          <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+          {/* Tarjeta de compra: precio → ahorro → cuotas → confianza → CTAs */}
+          <div className="mt-6 rounded-2xl border border-border bg-card p-5 transition-shadow duration-300 hover:shadow-md sm:p-6">
             <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-              <span className="text-4xl font-bold tracking-tight text-foreground">
+              <span className="text-4xl font-bold tabular-nums tracking-tight text-foreground">
                 {formatPrice(product.price)}
               </span>
               {discount && (
-                <span className="pb-1.5 text-lg text-muted-foreground line-through">
+                <span className="pb-1.5 text-lg tabular-nums text-muted-foreground line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
@@ -145,7 +160,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               )}
             </div>
             {discount && (
-              <span className="mt-1.5 inline-flex w-fit rounded-full bg-sale/10 px-2.5 py-0.5 text-sm font-semibold text-sale">
+              <span className="mt-2 inline-flex w-fit rounded-full bg-sale/10 px-2.5 py-0.5 text-sm font-semibold text-sale">
                 Ahorras {formatPrice(discount.save)}
               </span>
             )}
@@ -154,15 +169,15 @@ export default async function ProductPage({ params }: { params: Params }) {
               <CuotaBadge price={product.price} variant="full" />
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-4 text-sm">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-in-stock/10 px-2.5 py-1 font-semibold text-in-stock">
                 <Check className="size-4" /> En stock
               </span>
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                <Truck className="size-4" /> Recíbelo en 24-48h
+                <Truck className="size-4 shrink-0" /> Recíbelo en 24-48h
               </span>
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                <Store className="size-4" /> Retiro en Tegucigalpa / SPS
+                <Store className="size-4 shrink-0" /> Retiro en Tegucigalpa / SPS
               </span>
             </div>
 
@@ -181,18 +196,28 @@ export default async function ProductPage({ params }: { params: Params }) {
             <p className="mt-6 leading-relaxed text-muted-foreground">{product.description}</p>
           )}
 
-          <ul className="mt-6 grid gap-3 border-t border-border pt-6 text-sm">
-            <li className="flex items-center gap-2.5">
-              <BadgeCheck className="size-4 shrink-0 text-primary" /> Apple original, nuevo y sellado
-              — con garantía y factura
+          {/* Beneficios: iconos alineados a la primera línea, lead fuerte + detalle en muted */}
+          <ul className="mt-6 grid gap-3.5 border-t border-border pt-6 text-sm">
+            <li className="flex items-start gap-2.5">
+              <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-foreground">Apple original, nuevo y sellado</span>{' '}
+                <span className="text-muted-foreground">— con garantía y factura</span>
+              </span>
             </li>
-            <li className="flex items-center gap-2.5">
-              <CreditCard className="size-4 shrink-0 text-primary" /> Cuotas sin intereses con
-              tarjetas participantes
+            <li className="flex items-start gap-2.5">
+              <CreditCard className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-foreground">Cuotas sin intereses</span>{' '}
+                <span className="text-muted-foreground">— con tarjetas participantes</span>
+              </span>
             </li>
-            <li className="flex items-center gap-2.5">
-              <RotateCcw className="size-4 shrink-0 text-primary" /> 7 días para cambios o
-              devoluciones
+            <li className="flex items-start gap-2.5">
+              <RotateCcw className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="leading-relaxed">
+                <span className="font-medium text-foreground">7 días para cambios o devoluciones</span>{' '}
+                <span className="text-muted-foreground">— sin complicaciones</span>
+              </span>
             </li>
           </ul>
         </div>

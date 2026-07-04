@@ -21,7 +21,7 @@ export const ProductCarousel: React.FC<{
   const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' })
 
   return (
-    <section className="container py-10 md:py-12">
+    <section className="container py-12 md:py-16">
       <div className="mb-6 flex items-end justify-between gap-4">
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
         <div className="flex items-center gap-2">
@@ -39,8 +39,8 @@ export const ProductCarousel: React.FC<{
             variant="outline"
             size="icon"
             onClick={() => scroll(-1)}
-            aria-label="Anterior"
-            className="hidden rounded-full md:inline-flex"
+            aria-label="Productos anteriores"
+            className="hidden rounded-full border-border transition-colors duration-300 hover:border-primary/40 md:inline-flex"
           >
             <ChevronLeft className="size-4" />
           </Button>
@@ -49,17 +49,18 @@ export const ProductCarousel: React.FC<{
             variant="outline"
             size="icon"
             onClick={() => scroll(1)}
-            aria-label="Siguiente"
-            className="hidden rounded-full md:inline-flex"
+            aria-label="Productos siguientes"
+            className="hidden rounded-full border-border transition-colors duration-300 hover:border-primary/40 md:inline-flex"
           >
             <ChevronRight className="size-4" />
           </Button>
         </div>
       </div>
 
+      {/* Pista con scroll-snap; scrollbar oculta también en WebKit */}
       <div
         ref={ref}
-        className="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] snap-x"
+        className="flex snap-x gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {products.map((p) => (
           <div key={p.id} className="w-[220px] shrink-0 snap-start sm:w-[250px]">

@@ -25,27 +25,31 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
   return (
     <div
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10',
+        'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10',
         className,
       )}
     >
-      <Link href={href} className="relative block aspect-square overflow-hidden bg-white">
+      <Link
+        href={href}
+        aria-label={product.title}
+        className="relative block aspect-square overflow-hidden bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40"
+      >
         {product.image ? (
           <Image
             src={product.image}
             alt={product.title}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+            className="object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
             <PlaceholderIcon className="size-16 text-primary/30" strokeWidth={1.25} />
           </div>
         )}
         {discount && (
-          <span className="absolute left-3 top-3 rounded-full bg-sale px-2 py-0.5 text-xs font-bold text-sale-foreground shadow-sm">
-            -{discount.percent}%
+          <span className="absolute left-3 top-3 rounded-full bg-sale px-2.5 py-1 text-xs font-bold tabular-nums text-sale-foreground shadow-sm">
+            −{discount.percent}%
           </span>
         )}
       </Link>
@@ -69,8 +73,11 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
             {label}
           </span>
         )}
-        <Link href={href}>
-          <h3 className="line-clamp-2 min-h-10 text-sm font-medium leading-snug transition-colors group-hover:text-primary">
+        <Link
+          href={href}
+          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <h3 className="line-clamp-2 min-h-10 text-sm font-medium leading-snug transition-colors duration-300 group-hover:text-primary">
             {product.title}
           </h3>
         </Link>
@@ -81,11 +88,14 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
           <span className="text-xs text-muted-foreground">Sé el primero en opinar</span>
         )}
 
+        {/* Bloque de precio: jerarquía precio → tachado → ahorro → cuota */}
         <div className="mt-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-foreground">{formatPrice(product.price)}</span>
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="text-xl font-bold tabular-nums tracking-tight text-foreground">
+              {formatPrice(product.price)}
+            </span>
             {discount && (
-              <span className="text-sm text-muted-foreground line-through">
+              <span className="text-sm tabular-nums text-muted-foreground line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
@@ -98,12 +108,14 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
           <CuotaBadge price={product.price} variant="compact" />
         </div>
 
-        <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-in-stock">
-          <span className="size-1.5 rounded-full bg-in-stock" aria-hidden /> Disponible
-        </span>
-
-        <div className="mt-3 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-          <AddToCart className="w-full" label="Agregar al carrito" variantId={product.variantId} />
+        {/* Zona inferior anclada: disponibilidad + CTA (visible en móvil, revelado en hover en desktop) */}
+        <div className="mt-auto border-t border-border/60 pt-3">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-in-stock">
+            <span className="size-1.5 rounded-full bg-in-stock" aria-hidden /> Disponible
+          </span>
+          <div className="mt-2.5 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+            <AddToCart className="w-full" label="Agregar al carrito" variantId={product.variantId} />
+          </div>
         </div>
       </div>
     </div>

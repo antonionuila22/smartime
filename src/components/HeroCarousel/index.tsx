@@ -37,6 +37,9 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
   return (
     <div
       className="relative"
+      role="region"
+      aria-roledescription="carrusel"
+      aria-label="Promociones destacadas"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -59,7 +62,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                 <div className="container grid h-full grid-cols-1 items-center gap-6 md:grid-cols-2">
                   <div className="z-10 text-white md:pl-14">
                     {s.eyebrow && (
-                      <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide backdrop-blur">
+                      <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide ring-1 ring-white/20 backdrop-blur">
                         {s.eyebrow}
                       </span>
                     )}
@@ -136,14 +139,20 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
             <ChevronRight className="size-5" />
           </button>
 
-          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+          {/* Dots con área táctil ampliada (el punto visual vive en el span interior) */}
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center">
             {slides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => go(idx)}
-                aria-label={`Ir al slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${idx === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`}
-              />
+                aria-label={`Ir a la diapositiva ${idx + 1}`}
+                aria-current={idx === i}
+                className="group/dot flex h-9 items-center rounded-full px-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+              >
+                <span
+                  className={`h-2 rounded-full transition-all duration-300 ${idx === i ? 'w-7 bg-white' : 'w-2 bg-white/50 group-hover/dot:bg-white/80'}`}
+                />
+              </button>
             ))}
           </div>
         </>
