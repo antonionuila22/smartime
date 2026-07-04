@@ -45,10 +45,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
+          {/* Accesibilidad (WCAG 2.4.1 "Evitar bloques"): enlace para saltar la cabecera/menú
+              directamente al contenido. Oculto visualmente, aparece al recibir foco por teclado. */}
+          <a
+            href="#contenido"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            Saltar al contenido
+          </a>
           <AnnouncementBar />
           <Header />
           <CategoryNav />
-          {children}
+          {/* Landmark principal para lectores de pantalla; `tabIndex={-1}` permite que el enlace
+              de salto lo enfoque como destino. */}
+          <main id="contenido" tabIndex={-1} className="focus:outline-none">
+            {children}
+          </main>
           <Footer />
           <FloatingWhatsApp />
         </Providers>
