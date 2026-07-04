@@ -13,7 +13,16 @@ export const AddToCart: React.FC<{
   variant?: ButtonProps['variant']
   label?: string
   iconOnly?: boolean
-}> = ({ variantId, className, size = 'default', variant = 'default', label, iconOnly = false }) => {
+  inStock?: boolean
+}> = ({
+  variantId,
+  className,
+  size = 'default',
+  variant = 'default',
+  label,
+  iconOnly = false,
+  inStock = true,
+}) => {
   const { addItem, loading } = useCart()
   const [added, setAdded] = useState(false)
 
@@ -26,6 +35,23 @@ export const AddToCart: React.FC<{
     } catch {
       /* noop */
     }
+  }
+
+  // Producto agotado: botón deshabilitado sin lógica de carrito. Respeta iconOnly.
+  if (!inStock) {
+    return (
+      <Button
+        disabled
+        aria-disabled
+        className={className}
+        size={iconOnly ? 'icon' : size}
+        variant={variant}
+        aria-label={iconOnly ? 'Agotado' : undefined}
+      >
+        <ShoppingCart />
+        {!iconOnly && 'Agotado'}
+      </Button>
+    )
   }
 
   if (iconOnly) {

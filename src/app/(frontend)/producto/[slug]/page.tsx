@@ -58,6 +58,9 @@ export default async function ProductPage({ params }: { params: Params }) {
     : []
 
   const discount = getDiscount(product.price, product.originalPrice)
+  // Urgencia: inventario rastreado (stock != null) con pocas unidades restantes.
+  const lowStock =
+    product.inStock && product.stock != null && product.stock > 0 && product.stock <= 5
   const cat = product.categoryName ?? ''
   const kind: 'mac' | 'iphone' | 'other' = /iphone/i.test(cat)
     ? 'iphone'
@@ -79,7 +82,9 @@ export default async function ProductPage({ params }: { params: Params }) {
       url: `${getServerSideURL()}/producto/${product.handle}`,
       priceCurrency: 'HNL',
       price: product.price,
-      availability: 'https://schema.org/InStock',
+      availability: product.inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
     },
     ...(reviewCount > 0
@@ -170,9 +175,21 @@ export default async function ProductPage({ params }: { params: Params }) {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-4 text-sm">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-in-stock/10 px-2.5 py-1 font-semibold text-in-stock">
-                <Check className="size-4" /> En stock
-              </span>
+              {product.inStock ? (
+                lowStock ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-sale/10 px-2.5 py-1 font-semibold text-sale">
+                    <Check className="size-4" /> ¡Solo quedan {product.stock}!
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-in-stock/10 px-2.5 py-1 font-semibold text-in-stock">
+                    <Check className="size-4" /> En stock
+                  </span>
+                )
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground">
+                  Agotado
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                 <Truck className="size-4 shrink-0" /> Recíbelo en 24-48h
               </span>
@@ -187,8 +204,13 @@ export default async function ProductPage({ params }: { params: Params }) {
                 className="flex-1"
                 label="Agregar al carrito"
                 variantId={product.variantId}
+                inStock={product.inStock}
               />
-              <BuyNowButton variantId={product.variantId} className="flex-1" />
+              <BuyNowButton
+                variantId={product.variantId}
+                className="flex-1"
+                inStock={product.inStock}
+              />
             </div>
           </div>
 

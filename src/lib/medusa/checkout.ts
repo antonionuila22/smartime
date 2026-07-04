@@ -24,9 +24,9 @@ export type CheckoutAddress = {
 
 /** Campos del cart que necesita el checkout (no inflar el mini-cart del provider). */
 export const CHECKOUT_FIELDS =
-  'id,email,currency_code,region_id,total,subtotal,shipping_total,item_total,' +
+  'id,email,currency_code,region_id,total,subtotal,shipping_total,item_total,discount_total,' +
   '*items,*items.variant,*items.product,' +
-  '*shipping_address,*billing_address,*shipping_methods,' +
+  '*shipping_address,*billing_address,*shipping_methods,*promotions,' +
   '*payment_collection,*payment_collection.payment_sessions'
 
 /** Gate: cliente autenticado o null (sin lanzar). */
@@ -107,4 +107,58 @@ export async function retrieveCheckoutCart(cartId: string) {
  */
 export async function completeCart(cartId: string) {
   return medusa.store.cart.complete(cartId)
+}
+
+/**
+ * Resultado de aplicar/quitar un cupón: en éxito devuelve el cart recargado
+ * (con discount_total y promotions); en fallo devuelve un mensaje que la UI
+ * puede pintar inline sin romper el flujo del checkout.
+ */
+export type PromoResult =
+  | { ok: true; cart: HttpTypes.StoreCart }
+  | { ok: false; message: string }
+
+/**
+ * Aplica un código de descuento al carrito vía POST /store/carts/:id/promotions
+ * (body { promo_codes: [code] }, action ADD server-side) y devuelve el cart
+ * recargado con CHECKOUT_FIELDS. Un código inválido responde 400 → el SDK lanza
+ * FetchError; lo capturamos y devolvemos { ok:false, message } para la UI.
+ */
+export async function applyPromo(cartId: string, code: string): Promise<PromoResult> {
+  const clean = code.trim()
+  if (!clean) return { ok: false, message: 'Escribe un código de descuento.' }
+  try {
+    // El endpoint ya devuelve el cart, pero re-leemos con CHECKOUT_FIELDS para
+    // tener exactamente los mismos campos (totales/promotions) que usa la página.
+    const { cart } = await medusa.client.fetch<{ cart: HttpTypes.StoreCart }>(
+      `/store/carts/${cartId}/promotions`,
+      { method: 'POST', body: { promo_codes: [clean] } },
+    )
+    const fresh = await retrieveCheckoutCart(cartId)
+    return { ok: true, cart: (fresh ?? cart) as HttpTypes.StoreCart }
+  } catch (e: any) {
+    // FetchError expone .message ("The promotion code X is invalid") y .status.
+    const raw = String(e?.message || '')
+    const message = /invalid|not\s*found|no\s*existe/i.test(raw)
+      ? 'Ese código no es válido o ya no está disponible.'
+      : 'No pudimos aplicar el código. Inténtalo de nuevo.'
+    return { ok: false, message }
+  }
+}
+
+/**
+ * Quita un código ya aplicado vía DELETE /store/carts/:id/promotions
+ * (body { promo_codes: [code] }, action REMOVE) y devuelve el cart recargado.
+ */
+export async function removePromo(cartId: string, code: string): Promise<PromoResult> {
+  try {
+    const { cart } = await medusa.client.fetch<{ cart: HttpTypes.StoreCart }>(
+      `/store/carts/${cartId}/promotions`,
+      { method: 'DELETE', body: { promo_codes: [code] } },
+    )
+    const fresh = await retrieveCheckoutCart(cartId)
+    return { ok: true, cart: (fresh ?? cart) as HttpTypes.StoreCart }
+  } catch {
+    return { ok: false, message: 'No pudimos quitar el código. Inténtalo de nuevo.' }
+  }
 }

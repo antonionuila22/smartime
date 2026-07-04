@@ -13,6 +13,8 @@ export type ViewProduct = {
   brand?: string | null
   variantId?: string | null
   inStock: boolean
+  /** Unidades disponibles cuando el inventario se rastrea sin backorder; null = no rastreado / ilimitado. */
+  stock?: number | null
   rating?: number | null
   reviewCount?: number
 }

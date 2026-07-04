@@ -3,7 +3,8 @@ import { cacheLife, cacheTag } from 'next/cache'
 import { medusa } from './sdk'
 import type { ReviewItem, ViewProduct } from './types'
 
-const PRODUCT_FIELDS = '*variants.calculated_price,*categories,*images,+thumbnail,+metadata'
+const PRODUCT_FIELDS =
+  '*variants.calculated_price,*categories,*images,+thumbnail,+metadata,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder'
 
 /**
  * Capa de datos con CACHE COMPONENTS (Next 16). La DB es remota (~168ms/round-trip; un
@@ -68,6 +69,17 @@ export function toViewProduct(p: any): ViewProduct {
   const calcOriginal = cp?.original_amount && cp.original_amount > price ? cp.original_amount : null
   const originalPrice = calcOriginal ?? (metaCompare > price ? metaCompare : null)
   const images: string[] = (p.images || []).map((i: any) => i.url).filter(Boolean)
+  // Disponibilidad real a partir de la 1ª variante: hay stock si no se rastrea inventario,
+  // si admite backorder, o si la cantidad disponible es > 0. `stock` solo es un número cuando
+  // el inventario se rastrea sin backorder; en cualquier otro caso es null (ilimitado/no rastreado).
+  const inStock =
+    !variant?.manage_inventory ||
+    variant?.allow_backorder ||
+    (Number(variant?.inventory_quantity) || 0) > 0
+  const stock =
+    variant?.manage_inventory && !variant?.allow_backorder
+      ? Number(variant?.inventory_quantity) || 0
+      : null
   return {
     id: p.id,
     handle: p.handle,
@@ -81,7 +93,8 @@ export function toViewProduct(p: any): ViewProduct {
     categoryName: p.categories?.[0]?.name ?? null,
     brand: typeof meta.brand === 'string' ? meta.brand : null,
     variantId: variant?.id ?? null,
-    inStock: true,
+    inStock,
+    stock,
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

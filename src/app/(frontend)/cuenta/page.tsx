@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { Mail, Package, Truck, User as UserIcon } from 'lucide-react'
+import { ChevronRight, Mail, MapPin, Package, Truck, User as UserIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { LogoutButton } from '@/components/account/LogoutButton'
@@ -195,6 +195,25 @@ export default function CuentaPage() {
             </ul>
           )}
         </section>
+
+        {/* Mis direcciones */}
+        <Link
+          href="/cuenta/direcciones"
+          className="mt-10 flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-6 transition duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <div className="flex items-center gap-3">
+            <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <MapPin className="size-5" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold tracking-tight">Mis direcciones</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Guarda y edita tus direcciones de envío para un checkout más rápido.
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </Link>
 
         {/* Datos de la cuenta */}
         <section className="mt-10 rounded-2xl border border-border bg-card p-6">

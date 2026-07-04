@@ -21,6 +21,9 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
   const label = product.brand || cat
   const PlaceholderIcon = /iphone/i.test(cat) ? Smartphone : /mac/i.test(cat) ? Laptop : Package
   const hasReviews = (product.reviewCount ?? 0) > 0
+  // Urgencia: solo cuando el inventario se rastrea (stock != null) y quedan pocas unidades.
+  const lowStock =
+    product.inStock && product.stock != null && product.stock > 0 && product.stock <= 5
 
   return (
     <div
@@ -50,6 +53,11 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
         {discount && (
           <span className="absolute left-3 top-3 rounded-full bg-sale px-2.5 py-1 text-xs font-bold tabular-nums text-sale-foreground shadow-sm">
             −{discount.percent}%
+          </span>
+        )}
+        {!product.inStock && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground shadow-sm">
+            Agotado
           </span>
         )}
       </Link>
@@ -110,11 +118,26 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
 
         {/* Zona inferior anclada: disponibilidad + CTA (visible en móvil, revelado en hover en desktop) */}
         <div className="mt-auto border-t border-border/60 pt-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-in-stock">
-            <span className="size-1.5 rounded-full bg-in-stock" aria-hidden /> Disponible
-          </span>
+          {product.inStock ? (
+            lowStock ? (
+              <span className="text-xs font-semibold text-sale">
+                ¡Solo quedan {product.stock}!
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-in-stock">
+                <span className="size-1.5 rounded-full bg-in-stock" aria-hidden /> Disponible
+              </span>
+            )
+          ) : (
+            <span className="text-xs font-medium text-muted-foreground">Agotado</span>
+          )}
           <div className="mt-2.5 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-            <AddToCart className="w-full" label="Agregar al carrito" variantId={product.variantId} />
+            <AddToCart
+              className="w-full"
+              label="Agregar al carrito"
+              variantId={product.variantId}
+              inStock={product.inStock}
+            />
           </div>
         </div>
       </div>

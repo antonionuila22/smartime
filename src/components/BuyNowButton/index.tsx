@@ -12,7 +12,8 @@ import { cn } from '@/utilities/ui'
 export const BuyNowButton: React.FC<{
   variantId?: string | null
   className?: string
-}> = ({ variantId, className }) => {
+  inStock?: boolean
+}> = ({ variantId, className, inStock = true }) => {
   const { addItem } = useCart()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -26,6 +27,22 @@ export const BuyNowButton: React.FC<{
     } catch {
       setLoading(false)
     }
+  }
+
+  // Producto agotado: botón deshabilitado sin lógica de compra.
+  if (!inStock) {
+    return (
+      <Button
+        disabled
+        aria-disabled
+        variant="outline"
+        size="xl"
+        className={cn('transition duration-300', className)}
+      >
+        <Zap className="size-4 fill-current" />
+        Agotado
+      </Button>
+    )
   }
 
   return (
