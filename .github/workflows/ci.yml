@@ -1,0 +1,63 @@
+# CI del storefront (Next.js 16 + pnpm) — smartime / Honduras.
+#
+# Ejecuta SOLO pasos de calidad que no necesitan ni el backend Medusa ni una base
+# de datos, para que el pipeline sea fiable y determinista:
+#   1) typecheck  -> npx tsc --noEmit
+#   2) lint       -> pnpm run lint
+#   3) tests int. -> pnpm run test:int (Vitest)
+#
+# IMPORTANTE: aquí NO se ejecuta `next build`. El build del storefront llama a
+# `generateStaticParams`, que hace fetch al backend Medusa para prerenderizar los
+# slugs de producto (PDP). En CI ese backend no está disponible, así que el build
+# fallaría por un motivo ajeno a la calidad del código. El build real de producción
+# lo hace Vercel (con las env vars y el backend accesibles). Por eso se omite a
+# propósito en este workflow.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    name: Typecheck, lint y tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Traer el código del repo.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) Instalar pnpm ANTES de Node, para que la caché de Node pueda usar pnpm.
+      #    Se fija la versión de pnpm (misma que usa el proyecto en local: 11.9.0).
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      # 3) Node 22 con caché del store de pnpm (clave = pnpm-lock.yaml).
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # 4) Instalación reproducible: falla si el lockfile no está sincronizado.
+      #    El store NO es un monorepo (su pnpm-workspace.yaml solo declara
+      #    allowBuilds/onlyBuiltDependencies, no `packages:`), por lo que la
+      #    instalación estándar funciona sin `--ignore-workspace`.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5) Typecheck: comprueba tipos sin emitir artefactos (tsconfig ya tiene noEmit).
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # 6) Lint (ESLint vía el script del repo).
+      - name: Lint
+        run: pnpm run lint
+
+      # 7) Tests unitarios/de integración ligeros con Vitest (sin backend ni DB).
+      - name: Unit tests
+        run: pnpm run test:int
