@@ -12,9 +12,12 @@ import { ProductGallery } from '@/components/ProductGallery'
 import { RecentlyViewed } from '@/components/RecentlyViewed'
 import { ReviewStars } from '@/components/ReviewStars'
 import { ReviewsSection } from '@/components/ReviewsSection'
+import { JsonLd } from '@/components/JsonLd'
 import { formatPrice, getDiscount } from '@/utilities/format'
 import { getCategory, getProductByHandle, listProductReviews, listProducts } from '@/lib/medusa/data'
 import { getServerSideURL } from '@/utilities/getURL'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { breadcrumbJsonLd } from '@/utilities/structuredData'
 
 // Cache Components: prerenderizamos cada PDP por slug. `generateStaticParams` da las muestras
 // (los handles del catálogo) para que `params` sea estático; los datos vienen de la capa
@@ -36,8 +39,22 @@ type Params = Promise<{ slug: string }>
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params
   const product = await getProductByHandle(slug).catch(() => null)
-  if (!product) return { title: 'Producto no encontrado — smartime' }
-  return { title: `${product.title} — smartime`, description: product.description ?? undefined }
+  if (!product) return { title: 'Producto no encontrado' }
+  const path = `/producto/${product.handle}`
+  return {
+    // La plantilla del layout añade "— smartime"; aquí solo el nombre del producto.
+    title: product.title,
+    description: product.description ?? undefined,
+    // Canónica de la ficha: consolida cualquier variante de URL en esta.
+    alternates: { canonical: path },
+    openGraph: mergeOpenGraph({
+      title: product.title,
+      description: product.description ?? undefined,
+      url: path,
+      // Al compartir la ficha se ve la foto real del producto (mejor CTR social).
+      images: product.images.length ? [{ url: product.images[0], alt: product.title }] : undefined,
+    }),
+  }
 }
 
 export default async function ProductPage({ params }: { params: Params }) {
@@ -98,13 +115,21 @@ export default async function ProductPage({ params }: { params: Params }) {
       : {}),
   }
 
+  // Migas de pan: Inicio › Tienda › [Categoría] › Producto (para resultados enriquecidos).
+  const base = getServerSideURL()
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Inicio', url: `${base}/` },
+    { name: 'Tienda', url: `${base}/tienda` },
+    ...(product.categoryName && cat0
+      ? [{ name: product.categoryName, url: `${base}/tienda?categoria=${cat0.handle ?? cat0.id}` }]
+      : []),
+    { name: product.title, url: `${base}/producto/${product.handle}` },
+  ])
+
   return (
     <>
     <div className="container py-8 md:py-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
-      />
+      <JsonLd data={[jsonLd, breadcrumb]} />
       {/* Volver discreto: flecha con micro-desplazamiento en hover */}
       <Link
         href="/tienda"

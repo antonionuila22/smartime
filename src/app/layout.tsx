@@ -71,6 +71,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
+  // Plantilla de título: cada página aporta solo su parte y se le añade el sufijo de marca.
+  // `default` cubre las páginas que no definen título propio.
+  title: {
+    default: 'smartime — Apple Mac y iPhone en Honduras',
+    template: '%s — smartime',
+  },
+  description:
+    'Mac y iPhone originales en Honduras, con garantía y envío a todo el país. Precios en Lempiras.',
+  applicationName: 'smartime',
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',

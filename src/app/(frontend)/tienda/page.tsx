@@ -13,9 +13,32 @@ import type { ViewProduct } from '@/lib/medusa/types'
 // DINÁMICO que se transmite dentro de <Suspense>. El shell (skeleton) se prerenderiza y se
 // envía al instante; los resultados llegan en streaming. Los datos de catálogo salen de la
 // capa CACHEADA (lib/medusa/data.ts), así que el streaming no paga la query lenta a la DB.
-export const metadata: Metadata = {
-  title: 'Tienda — smartime',
-  description: 'Explora todos los productos Apple (Mac y iPhone) de smartime. Precios en Lempiras.',
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}): Promise<Metadata> {
+  const sp = await searchParams
+  const q = sp.q?.trim()
+  const cat = sp.categoria ? await getCategory(sp.categoria).catch(() => null) : null
+
+  // Título dinámico: categoría > búsqueda > genérico. La plantilla añade "— smartime".
+  const title = cat?.name ?? (q ? `Resultados para "${q}"` : 'Tienda')
+
+  // Canónica: consolida las variantes por FILTRO (orden/precio/marca) en la URL base o de
+  // categoría, para no indexar cada combinación de query. Las BÚSQUEDAS (?q= sin categoría) son
+  // páginas finas → noindex,follow (se rastrea, no se indexa).
+  const canonical = cat ? `/tienda?categoria=${cat.handle ?? cat.id}` : '/tienda'
+  const isBareSearch = !!q && !cat
+
+  return {
+    title,
+    description: cat
+      ? `${cat.name} en smartime, con garantía y envío a todo Honduras. Precios en Lempiras.`
+      : 'Explora todos los productos de smartime: Apple, audio, gaming, hogar y más. Precios en Lempiras.',
+    alternates: { canonical },
+    ...(isBareSearch ? { robots: { index: false, follow: true } } : {}),
+  }
 }
 
 const PRICE_BUCKETS = [

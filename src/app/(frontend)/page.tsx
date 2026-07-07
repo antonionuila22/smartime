@@ -9,17 +9,22 @@ import { CategoryGrid, type CatTile } from '@/components/CategoryGrid'
 import { PromoBanner } from '@/components/PromoBanner'
 import { RecentlyViewed } from '@/components/RecentlyViewed'
 import { TrustBand } from '@/components/TrustBand'
+import { JsonLd } from '@/components/JsonLd'
 import { listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
+import { organizationJsonLd, websiteJsonLd } from '@/utilities/structuredData'
+import { getServerSideURL } from '@/utilities/getURL'
 
 // Cache Components: la home consume solo datos cacheados (`'use cache'` en lib/medusa/data.ts),
 // así que se prerenderiza completa en el shell estático. Sin `revalidate` a nivel de ruta: el TTL
 // lo gobierna `cacheLife` en la capa de datos.
 
 export const metadata: Metadata = {
-  title: 'smartime — Tecnología que te conecta | Honduras',
+  // `absolute` evita el sufijo "— smartime" de la plantilla (el título ya lleva la marca).
+  title: { absolute: 'smartime — Tecnología que te conecta | Honduras' },
   description:
     'Apple, electrodomésticos, audio, gaming y smart home con garantía y envío a todo Honduras. Precios en Lempiras y cuotas sin intereses.',
+  alternates: { canonical: '/' },
 }
 
 const PROMO_TILES = [
@@ -108,8 +113,12 @@ export default async function HomePage() {
     .map((c) => ({ c, items: byCat.get(c.name) ?? [] }))
     .filter((r) => r.items.length > 0)
 
+  const base = getServerSideURL()
+
   return (
     <div className="flex flex-col">
+      {/* Entidad de marca + WebSite con búsqueda para la sitelinks searchbox de Google. */}
+      <JsonLd data={[organizationJsonLd(base), websiteJsonLd(base)]} />
       <section className="container pt-6 md:pt-8">
         <HeroCarousel slides={slides} />
         {/* Beneficios rápidos bajo el hero: sombra solo en hover para mantener el fondo limpio */}
