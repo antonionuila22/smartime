@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import React, { useState } from 'react'
 import { Laptop, Package, Smartphone } from 'lucide-react'
 
@@ -31,12 +32,18 @@ export const ProductGallery: React.FC<{
     <div className="flex flex-col gap-3 sm:gap-4">
       {/* Imagen principal con zoom sutil en hover y contador discreto */}
       <div className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-white p-6 transition-colors duration-300 hover:border-primary/40 sm:p-8">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={main.url}
-          alt={main.alt || title}
-          className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
-        />
+        {/* Wrapper `relative` DENTRO del padding para que `fill` respete el p-6/p-8. */}
+        <div className="relative h-full w-full">
+          <Image
+            src={main.url}
+            alt={main.alt || title}
+            fill
+            // Imagen principal de la ficha (candidata a LCP): se prioriza su carga.
+            priority
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+            className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+        </div>
         {images.length > 1 && (
           <span
             aria-hidden
@@ -62,8 +69,13 @@ export const ProductGallery: React.FC<{
               aria-label={`Ver imagen ${i + 1} de ${images.length}`}
               aria-current={i === active ? 'true' : undefined}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt="" className="h-full w-full bg-white object-contain p-1" />
+              <Image
+                src={img.url}
+                alt=""
+                fill
+                sizes="(max-width: 640px) 20vw, 96px"
+                className="bg-white object-contain p-1"
+              />
             </button>
           ))}
         </div>

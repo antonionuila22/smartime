@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { ArrowRight, Package } from 'lucide-react'
@@ -37,13 +38,15 @@ export const CategoryGrid: React.FC<{ categories: CatTile[] }> = ({ categories }
           >
             <div className="grid h-24 w-full place-items-center overflow-hidden rounded-xl bg-white p-2">
               {c.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.image}
-                  alt={c.name}
-                  loading="lazy"
-                  className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-110"
-                />
+                <div className="relative h-full w-full">
+                  <Image
+                    src={c.image}
+                    alt={c.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-contain transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
               ) : (
                 <Package className="size-10 text-primary/25" strokeWidth={1.25} aria-hidden />
               )}

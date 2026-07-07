@@ -66,8 +66,12 @@ function TiendaSkeleton() {
 async function TiendaResults({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams
 
-  const categories = await listCategories().catch(() => [])
-  const activeCat = sp.categoria ? await getCategory(sp.categoria) : null
+  // `listCategories` no depende de la categoría activa → en paralelo con la resolución de esta
+  // (recomendación Next 16). `listProducts` sí depende de `activeCat`, así que va después.
+  const [categories, activeCat] = await Promise.all([
+    listCategories().catch(() => []),
+    sp.categoria ? getCategory(sp.categoria) : Promise.resolve(null),
+  ])
 
   let products = await listProducts({
     categoryId: activeCat?.id,

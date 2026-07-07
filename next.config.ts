@@ -63,6 +63,12 @@ const nextConfig: NextConfig = {
   // Cache Components (Next 16): habilita la directiva `'use cache'` + `cacheLife`/`cacheTag`
   // y el Partial Prerendering (shell estático + huecos dinámicos en streaming) por defecto.
   cacheComponents: true,
+  experimental: {
+    // Inserta el CSS crítico EN LÍNEA en el <head> en vez de un <link> que bloquea el render.
+    // Recomendación de rendimiento de Next 16: mejora el LCP en la primera carga (evita un
+    // round-trip que bloquea la pintura). Tailwind v4 genera un CSS compacto, ideal para esto.
+    inlineCss: true,
+  },
   images: {
     // Negociación de formato moderno: sirve AVIF/WebP a navegadores compatibles (imágenes
     // mucho más ligeras → mejor LCP) y cae a PNG/JPG en el resto.

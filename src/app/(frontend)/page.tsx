@@ -30,13 +30,11 @@ const PROMO_TILES = [
 ]
 
 export default async function HomePage() {
-  let products: ViewProduct[] = []
-  try {
-    products = await listProducts({ limit: 100 })
-  } catch {
-    products = []
-  }
-  const categories = await listCategories().catch(() => [])
+  // Independientes → en paralelo (recomendación Next 16: no encadenar awaits sin dependencia).
+  const [products, categories] = await Promise.all([
+    listProducts({ limit: 100 }).catch((): ViewProduct[] => []),
+    listCategories().catch(() => []),
+  ])
 
   // Agrupar por categoría
   const byCat = new Map<string, ViewProduct[]>()

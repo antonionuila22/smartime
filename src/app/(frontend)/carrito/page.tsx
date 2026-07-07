@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from 'lucide-react'
@@ -76,10 +77,11 @@ export default function CarritoPage() {
                 className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-white transition duration-300 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 {item.thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={item.thumbnail}
                     alt={item.product_title || item.title}
+                    width={80}
+                    height={80}
                     className="h-full w-full object-contain p-1"
                   />
                 ) : (
