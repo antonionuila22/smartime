@@ -63,6 +63,11 @@ const nextConfig: NextConfig = {
   // Cache Components (Next 16): habilita la directiva `'use cache'` + `cacheLife`/`cacheTag`
   // y el Partial Prerendering (shell estático + huecos dinámicos en streaming) por defecto.
   cacheComponents: true,
+  // React Compiler (React 19 + Next 16): auto-memoiza componentes (menos re-renders sin
+  // useMemo/useCallback/memo manuales). Conservador por diseño: omite los componentes que no
+  // puede optimizar con seguridad, no los rompe. Beneficia la superficie cliente (carrito,
+  // checkout, cuenta, header). Requiere babel-plugin-react-compiler.
+  reactCompiler: true,
   experimental: {
     // Inserta el CSS crítico EN LÍNEA en el <head> en vez de un <link> que bloquea el render.
     // Recomendación de rendimiento de Next 16: mejora el LCP en la primera carga (evita un
