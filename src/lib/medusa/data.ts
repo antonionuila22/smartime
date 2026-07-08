@@ -1,6 +1,7 @@
 import { cacheLife, cacheTag } from 'next/cache'
 
 import { medusa } from './sdk'
+import { pickHnRegion } from './region'
 import type { ReviewItem, ViewProduct } from './types'
 
 const PRODUCT_FIELDS =
@@ -26,8 +27,7 @@ export async function getRegionId(): Promise<string | undefined> {
   cacheLife('hours')
   cacheTag('regions')
   const { regions } = await medusa.store.region.list()
-  const hn = regions.find((r) => r.currency_code === 'hnl') ?? regions[0]
-  return hn?.id
+  return pickHnRegion(regions)?.id
 }
 
 /* ------------------------------ Categorías ---------------------------- */

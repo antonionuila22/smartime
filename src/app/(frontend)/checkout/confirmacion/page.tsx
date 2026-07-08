@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, Package } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa/sdk'
-import { etaForMethodName, etaFromOrderMetadata, etaFromShippingData } from '@/utilities/eta'
+import { resolveOrderEta } from '@/utilities/eta'
 import { formatPrice } from '@/utilities/format'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -67,18 +67,9 @@ export default function ConfirmacionPage() {
   }
 
   const method = order.shipping_methods?.[0]
-  // La ETA congelada (metadata.eta) puede no existir todavía: el subscriber `order.placed`
-  // corre async y esta página se abre justo tras completar el pedido. El fallback se ancla a
-  // la FECHA DEL PEDIDO (no a "ahora") con la misma lógica HN que el subscriber, así que la
-  // fecha mostrada aquí coincide exactamente con la ETA congelada que se verá luego en /cuenta.
-  const created = order.created_at ? new Date(order.created_at) : new Date()
-  const eta =
-    etaFromOrderMetadata(order.metadata) ??
-    etaFromShippingData(
-      method?.data && Object.keys(method.data).length ? method.data : method?.shipping_option?.data,
-      created,
-    ) ??
-    etaForMethodName(method?.name, created)
+  // ETA por la cadena de prioridad centralizada (metadata congelada → shipping_option.data →
+  // nombre del método), anclada a la fecha del pedido → coincide con lo que se verá en /cuenta.
+  const eta = resolveOrderEta(order)
 
   return (
     <div className="container max-w-2xl py-12 md:py-16">

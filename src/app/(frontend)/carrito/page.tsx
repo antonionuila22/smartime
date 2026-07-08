@@ -154,7 +154,7 @@ export default function CarritoPage() {
                     type="button"
                     disabled={loading}
                     onClick={() => removeItem(item.id)}
-                    className="-mr-1 -mt-1 grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                    className="-mr-1 -mt-1 grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                     aria-label={`Eliminar ${item.product_title || item.title}`}
                   >
                     <Trash2 className="size-4" />
@@ -167,7 +167,7 @@ export default function CarritoPage() {
                       type="button"
                       disabled={loading}
                       onClick={() => changeQty(item.id, item.quantity - 1)}
-                      className="grid size-10 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                      className="grid size-11 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                       aria-label="Restar una unidad"
                     >
                       <Minus className="size-4" />
@@ -179,7 +179,7 @@ export default function CarritoPage() {
                       type="button"
                       disabled={loading || atMax}
                       onClick={() => changeQty(item.id, item.quantity + 1)}
-                      className="grid size-10 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
+                      className="grid size-11 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                       aria-label="Sumar una unidad"
                       title={atMax ? 'Alcanzaste el máximo disponible en stock' : undefined}
                     >

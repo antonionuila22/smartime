@@ -8,7 +8,7 @@ import { ChevronRight, Mail, MapPin, Package, Truck, User as UserIcon } from 'lu
 import { Button } from '@/components/ui/button'
 import { LogoutButton } from '@/components/account/LogoutButton'
 import { medusa } from '@/lib/medusa/sdk'
-import { etaForMethodName, etaFromOrderMetadata, etaFromShippingData } from '@/utilities/eta'
+import { resolveOrderEta } from '@/utilities/eta'
 import { formatPrice } from '@/utilities/format'
 import { orderState, toneClasses } from '@/utilities/orderStatus'
 
@@ -123,18 +123,8 @@ export default function CuentaPage() {
                 const st = orderState(order)
                 const method = order.shipping_methods?.[0]
                 const delivered = order.fulfillment_status === 'delivered'
-                const created = new Date(order.created_at)
-                const etaData =
-                  method?.data && Object.keys(method.data).length
-                    ? method.data
-                    : method?.shipping_option?.data
-                const eta =
-                  // 1) ETA congelada en el pedido (autoritativa, no se mueve)
-                  etaFromOrderMetadata(order.metadata) ??
-                  // 2) data de la opción de envío (relativa a la fecha del pedido)
-                  (etaData ? etaFromShippingData(etaData, created) : null) ??
-                  // 3) último recurso: por nombre del método
-                  etaForMethodName(method?.name, created)
+                // Cadena de ETA centralizada (metadata congelada → opción de envío → nombre).
+                const eta = resolveOrderEta(order)
                 const itemCount = (order.items ?? []).reduce((s: number, i: any) => s + (i.quantity || 0), 0)
                 return (
                   <li

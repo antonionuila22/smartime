@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 
 import { medusa } from '@/lib/medusa/sdk'
+import { pickHnRegion } from '@/lib/medusa/region'
 
 const CART_KEY = 'smartime_medusa_cart_id'
 const FIELDS =
@@ -53,7 +54,7 @@ const CartContext = createContext<CartContextValue | null>(null)
 
 async function getRegionId(): Promise<string | undefined> {
   const { regions } = await medusa.store.region.list()
-  return (regions.find((r) => r.currency_code === 'hnl') ?? regions[0])?.id
+  return pickHnRegion(regions)?.id
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

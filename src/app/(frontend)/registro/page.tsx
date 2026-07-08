@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { AlertCircle, Loader2, ShoppingBag } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2, ShoppingBag } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { emitAuthChanged } from '@/lib/authEvents'
@@ -16,6 +16,8 @@ export default function RegistroPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Controla el toggle de mostrar/ocultar contraseña (mejora UX, evita errores de tecleo).
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -94,7 +96,8 @@ export default function RegistroPage() {
               id="name"
               type="text"
               required
-              autoComplete="name"
+              autoComplete="given-name"
+              name="given-name"
               placeholder="¿Cómo te llamas?"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -110,6 +113,7 @@ export default function RegistroPage() {
               type="email"
               required
               autoComplete="email"
+              name="email"
               placeholder="nombre@correo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -120,17 +124,34 @@ export default function RegistroPage() {
             <label htmlFor="password" className="text-sm font-medium">
               Contraseña
             </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 placeholder:text-muted-foreground/60 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
-            />
+            {/* Campo con botón para mostrar/ocultar la contraseña (accesible y sin enviar el form). */}
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                autoComplete="new-password"
+                name="password"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 w-full rounded-lg border border-input bg-background pl-3 pr-10 text-sm outline-none transition duration-300 placeholder:text-muted-foreground/60 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className="absolute right-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors duration-300 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
             <p className="text-xs text-muted-foreground">Debe tener al menos 6 caracteres.</p>
           </div>
 

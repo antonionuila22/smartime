@@ -7,7 +7,7 @@ import { ArrowLeft, CreditCard, MapPin, Package, Truck } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa/sdk'
-import { etaForMethodName, etaFromOrderMetadata, etaFromShippingData } from '@/utilities/eta'
+import { resolveOrderEta } from '@/utilities/eta'
 import { formatPrice } from '@/utilities/format'
 import { orderState, toneClasses } from '@/utilities/orderStatus'
 
@@ -71,15 +71,8 @@ export default function PedidoDetallePage() {
   const address = order.shipping_address
   const delivered = order.fulfillment_status === 'delivered'
   const created = new Date(order.created_at)
-  const etaData =
-    method?.data && Object.keys(method.data).length ? method.data : method?.shipping_option?.data
-  const eta =
-    // 1) ETA congelada en el pedido (autoritativa, no se mueve)
-    etaFromOrderMetadata(order.metadata) ??
-    // 2) data de la opción de envío (relativa a la fecha del pedido)
-    (etaData ? etaFromShippingData(etaData, created) : null) ??
-    // 3) último recurso: por nombre del método
-    etaForMethodName(method?.name, created)
+  // Cadena de ETA centralizada (metadata congelada → opción de envío → nombre del método).
+  const eta = resolveOrderEta(order)
   const paymentLabel = PAYMENT_LABELS[order.payment_status] ?? 'Procesando'
 
   return (

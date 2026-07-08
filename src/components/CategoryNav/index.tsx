@@ -12,9 +12,10 @@ export async function CategoryNav() {
   }
 
   // Estilo compartido de las píldoras: borde transparente para que el hover no
-  // desplace el layout, y tap-target de 40 px de alto en móvil.
+  // desplace el layout, e inline-flex + min-h-11 para garantizar un objetivo
+  // táctil accesible de 44 px de alto (el glifo queda centrado verticalmente).
   const pillClass =
-    'whitespace-nowrap rounded-full border border-transparent px-3.5 py-2.5 leading-none text-muted-foreground transition-colors duration-300 hover:border-primary/40 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+    'inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-transparent px-3.5 py-2.5 leading-none text-muted-foreground transition-colors duration-300 hover:border-primary/40 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 
   return (
     <nav aria-label="Categorías de productos" className="relative border-b border-border bg-background">

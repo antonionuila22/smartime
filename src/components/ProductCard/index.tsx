@@ -132,8 +132,10 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
             <span className="text-xs font-medium text-muted-foreground">Agotado</span>
           )}
           <div className="mt-2.5 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+            {/* Objetivo táctil móvil: el botón (h-10=40px) sube a min 44px vía el div contenedor;
+                en desktop (md+) se restablece a 40px para no alterar el layout de la tarjeta. */}
             <AddToCart
-              className="w-full"
+              className="w-full [&>button]:min-h-11 md:[&>button]:min-h-0"
               label="Agregar al carrito"
               variantId={product.variantId}
               inStock={product.inStock}

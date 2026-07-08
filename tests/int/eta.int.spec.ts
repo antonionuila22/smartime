@@ -4,6 +4,7 @@ import {
   etaFromOrderMetadata,
   etaFromShippingData,
   etaForMethodName,
+  resolveOrderEta,
 } from '@/utilities/eta'
 
 /**
@@ -162,6 +163,52 @@ describe('etaFromShippingData (base + N días hábiles, salta sáb/dom)', () => 
     } finally {
       process.env.TZ = tzOriginal
     }
+  })
+})
+
+describe('resolveOrderEta (cadena de prioridad centralizada)', () => {
+  const CREATED = '2026-07-07T18:00:00.000Z'
+  const FROZEN = {
+    eta: { min_date: '2026-07-09T12:00:00.000Z', max_date: '2026-07-13T12:00:00.000Z' },
+  }
+
+  it('1º prioriza la metadata CONGELADA e ignora la data de envío', () => {
+    const order = {
+      metadata: FROZEN,
+      created_at: CREATED,
+      shipping_methods: [{ name: 'Envío estándar Honduras', data: { eta_min_dias: 9, eta_max_dias: 9 } }],
+    }
+    expect(resolveOrderEta(order)?.label).toBe(etaFromOrderMetadata(FROZEN)?.label)
+  })
+
+  it('2º sin metadata usa method.data anclado a la fecha del PEDIDO (no "ahora")', () => {
+    const data = { eta_min_dias: 2, eta_max_dias: 4 }
+    const order = { metadata: {}, created_at: CREATED, shipping_methods: [{ name: 'X', data }] }
+    expect(resolveOrderEta(order)?.label).toBe(etaFromShippingData(data, new Date(CREATED))?.label)
+  })
+
+  it('cae a shipping_option.data cuando method.data está vacío', () => {
+    const optData = { eta_min_dias: 1, eta_max_dias: 2 }
+    const order = {
+      metadata: {},
+      created_at: CREATED,
+      shipping_methods: [{ name: 'X', data: {}, shipping_option: { data: optData } }],
+    }
+    expect(resolveOrderEta(order)?.label).toBe(etaFromShippingData(optData, new Date(CREATED))?.label)
+  })
+
+  it('3º último recurso: por NOMBRE del método', () => {
+    const order = {
+      metadata: {},
+      created_at: CREATED,
+      shipping_methods: [{ name: 'Envío estándar Honduras' }],
+    }
+    expect(resolveOrderEta(order)?.label).toBe(etaForMethodName('Envío estándar Honduras', new Date(CREATED))?.label)
+  })
+
+  it('sin método de envío → null', () => {
+    expect(resolveOrderEta({ metadata: {}, created_at: CREATED, shipping_methods: [] })).toBeNull()
+    expect(resolveOrderEta({ metadata: {}, created_at: CREATED })).toBeNull()
   })
 })
 

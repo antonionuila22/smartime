@@ -103,3 +103,36 @@ export function etaFromShippingData(data: unknown, base: Date = new Date()): Eta
   const maxDate = addBusinessDaysUtc(cursor, max)
   return { minDate, maxDate, label: labelFor(minDate, maxDate) }
 }
+
+/** Forma mínima de pedido que necesita `resolveOrderEta` (compatible con la respuesta del Store API). */
+export type OrderLikeForEta = {
+  metadata?: unknown
+  created_at?: string | null
+  shipping_methods?: Array<{
+    name?: string | null
+    data?: Record<string, unknown> | null
+    shipping_option?: { data?: unknown } | null
+  }> | null
+}
+
+/**
+ * ETA de un PEDIDO ya colocado: la cadena de prioridad COMPLETA en UN solo lugar (antes se
+ * re-escribía —con `any`— en /checkout/confirmacion, /cuenta y /cuenta/pedidos/[id]; una
+ * divergencia mostraba fechas distintas para el mismo pedido).
+ *   1. `metadata.eta` congelada (autoritativa)
+ *   2. `shipping_option.data` (se prefiere `method.data` si el proveedor lo conservó; si no, el de
+ *      la opción)
+ *   3. nombre del método (mapa espejo del seed)
+ * Base = FECHA DEL PEDIDO (no "ahora"), para coincidir exactamente con la ETA congelada.
+ */
+export function resolveOrderEta(order: OrderLikeForEta): Eta {
+  const method = order.shipping_methods?.[0]
+  const base = order.created_at ? new Date(order.created_at) : new Date()
+  const methodData =
+    method?.data && Object.keys(method.data).length ? method.data : method?.shipping_option?.data
+  return (
+    etaFromOrderMetadata(order.metadata) ??
+    etaFromShippingData(methodData, base) ??
+    etaForMethodName(method?.name, base)
+  )
+}

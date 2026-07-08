@@ -400,13 +400,13 @@ export default function CheckoutPage() {
             </div>
             {step === 'address' ? (
               <form onSubmit={onSubmitAddress} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Nombre" value={address.first_name} onChange={(v) => setAddress((a) => ({ ...a, first_name: v }))} required />
-                <Field label="Apellido" value={address.last_name} onChange={(v) => setAddress((a) => ({ ...a, last_name: v }))} required />
-                <Field label="Teléfono" type="tel" inputMode="tel" autoComplete="tel" value={address.phone || ''} onChange={(v) => setAddress((a) => ({ ...a, phone: v }))} required className="sm:col-span-2" />
-                <Field label="Dirección" value={address.address_1} onChange={(v) => setAddress((a) => ({ ...a, address_1: v }))} required className="sm:col-span-2" />
-                <Field label="Referencia (opcional)" value={address.address_2 || ''} onChange={(v) => setAddress((a) => ({ ...a, address_2: v }))} className="sm:col-span-2" />
-                <Field label="Ciudad" value={address.city} onChange={(v) => setAddress((a) => ({ ...a, city: v }))} required />
-                <Field label="Departamento" value={address.province || ''} onChange={(v) => setAddress((a) => ({ ...a, province: v }))} />
+                <Field label="Nombre" autoComplete="given-name" name="given-name" value={address.first_name} onChange={(v) => setAddress((a) => ({ ...a, first_name: v }))} required />
+                <Field label="Apellido" autoComplete="family-name" name="family-name" value={address.last_name} onChange={(v) => setAddress((a) => ({ ...a, last_name: v }))} required />
+                <Field label="Teléfono" type="tel" inputMode="tel" autoComplete="tel" name="tel" value={address.phone || ''} onChange={(v) => setAddress((a) => ({ ...a, phone: v }))} required className="sm:col-span-2" />
+                <Field label="Dirección" autoComplete="address-line1" name="address-line1" value={address.address_1} onChange={(v) => setAddress((a) => ({ ...a, address_1: v }))} required className="sm:col-span-2" />
+                <Field label="Referencia (opcional)" autoComplete="address-line2" name="address-line2" value={address.address_2 || ''} onChange={(v) => setAddress((a) => ({ ...a, address_2: v }))} className="sm:col-span-2" />
+                <Field label="Ciudad" autoComplete="address-level2" name="address-level2" value={address.city} onChange={(v) => setAddress((a) => ({ ...a, city: v }))} required />
+                <Field label="Departamento" autoComplete="address-level1" name="address-level1" value={address.province || ''} onChange={(v) => setAddress((a) => ({ ...a, province: v }))} />
                 <Button type="submit" size="lg" disabled={busy} className="rounded-full sm:col-span-2">
                   {busy && <Loader2 className="size-4 animate-spin" />} Continuar al envío
                 </Button>
@@ -673,7 +673,8 @@ const Field: React.FC<{
   type?: string
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
   autoComplete?: string
-}> = ({ label, value, onChange, required, className, type = 'text', inputMode, autoComplete }) => {
+  name?: string
+}> = ({ label, value, onChange, required, className, type = 'text', inputMode, autoComplete, name }) => {
   const id = `chk-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
   return (
     <div className={`space-y-1.5 ${className ?? ''}`}>
@@ -682,6 +683,7 @@ const Field: React.FC<{
       </label>
       <input
         id={id}
+        name={name}
         type={type}
         inputMode={inputMode}
         autoComplete={autoComplete}

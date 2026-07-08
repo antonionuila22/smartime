@@ -141,7 +141,9 @@
   /* Comercio: descuento/ahorro (rojo vivo) y disponibilidad (verde) */
   --sale: oklch(57.7% 0.22 27deg);
   --sale-foreground: oklch(98.5% 0 0deg);
-  --in-stock: oklch(60% 0.17 150deg);
+  /* Verde de disponibilidad/éxito EN CLARO. A 60%L daba 3.65:1 sobre cards blancas (< AA 4.5:1)
+     para 'Disponible'/'En stock'/'Gratis'/descuento/'Pedido confirmado'. A ~50%L pasa AA. */
+  --in-stock: oklch(50% 0.15 150deg);
 }
 
 [data-theme='dark'] {
@@ -192,6 +194,29 @@
   background-image: radial-gradient(75% 55% at 50% -8%, oklch(64% 0.18 258deg / 0.1), transparent 70%);
   background-repeat: no-repeat;
   background-attachment: fixed;
+}
+
+/* color-scheme: el navegador conoce el tema activo → selects, scrollbars, autofill, spinners
+   nativos y la barra del navegador móvil salen coherentes (evita chrome CLARO sobre fondo oscuro). */
+:root {
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* prefers-reduced-motion GLOBAL: neutraliza animaciones y transiciones para quien lo pide.
+   Cubre lo que los guards por-componente no alcanzan (hover lift/scale, animate-in, el slide del
+   carrusel, etc.). Los componentes con auto-rotación además cortan su temporizador en JS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @theme inline {

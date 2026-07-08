@@ -278,12 +278,16 @@ export default function DireccionesPage() {
             <form onSubmit={onSubmit} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field
                 label="Nombre"
+                name="first_name"
+                autoComplete="given-name"
                 value={form.first_name}
                 onChange={(v) => setForm((f) => ({ ...f, first_name: v }))}
                 required
               />
               <Field
                 label="Apellido"
+                name="last_name"
+                autoComplete="family-name"
                 value={form.last_name}
                 onChange={(v) => setForm((f) => ({ ...f, last_name: v }))}
                 required
@@ -291,12 +295,16 @@ export default function DireccionesPage() {
               <Field
                 label="Teléfono"
                 type="tel"
+                name="phone"
+                autoComplete="tel"
                 value={form.phone}
                 onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
                 className="sm:col-span-2"
               />
               <Field
                 label="Dirección"
+                name="address_1"
+                autoComplete="address-line1"
                 value={form.address_1}
                 onChange={(v) => setForm((f) => ({ ...f, address_1: v }))}
                 required
@@ -304,12 +312,16 @@ export default function DireccionesPage() {
               />
               <Field
                 label="Ciudad"
+                name="city"
+                autoComplete="address-level2"
                 value={form.city}
                 onChange={(v) => setForm((f) => ({ ...f, city: v }))}
                 required
               />
               <SelectField
                 label="Departamento"
+                name="province"
+                autoComplete="address-level1"
                 value={form.province}
                 onChange={(v) => setForm((f) => ({ ...f, province: v }))}
                 options={DEPARTAMENTOS_HN}
@@ -426,7 +438,10 @@ const Field: React.FC<{
   required?: boolean
   type?: string
   className?: string
-}> = ({ label, value, onChange, required, type = 'text', className }) => {
+  // Habilita el autocompletado del navegador (igual que en el checkout).
+  name?: string
+  autoComplete?: string
+}> = ({ label, value, onChange, required, type = 'text', className, name, autoComplete }) => {
   const id = `dir-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
   return (
     <div className={`space-y-1.5 ${className ?? ''}`}>
@@ -436,6 +451,8 @@ const Field: React.FC<{
       <input
         id={id}
         type={type}
+        name={name}
+        autoComplete={autoComplete}
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -452,7 +469,10 @@ const SelectField: React.FC<{
   onChange: (v: string) => void
   options: string[]
   className?: string
-}> = ({ label, value, onChange, options, className }) => {
+  // Habilita el autocompletado del navegador (p. ej. address-level1).
+  name?: string
+  autoComplete?: string
+}> = ({ label, value, onChange, options, className, name, autoComplete }) => {
   const id = `dir-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
   return (
     <div className={`space-y-1.5 ${className ?? ''}`}>
@@ -461,6 +481,8 @@ const SelectField: React.FC<{
       </label>
       <select
         id={id}
+        name={name}
+        autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
