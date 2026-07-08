@@ -91,6 +91,7 @@ export function toViewProduct(p: any): ViewProduct {
     originalPrice,
     currencyCode: cp?.currency_code || 'hnl',
     categoryName: p.categories?.[0]?.name ?? null,
+    categoryIds: (p.categories || []).map((c: any) => c.id).filter(Boolean),
     brand: typeof meta.brand === 'string' ? meta.brand : null,
     variantId: variant?.id ?? null,
     inStock,
@@ -99,10 +100,18 @@ export function toViewProduct(p: any): ViewProduct {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** Listado de productos (con precio y reseñas). Cacheado por combinación de parámetros. */
-export async function listProducts(
-  params: { categoryId?: string; q?: string; limit?: number } = {},
-): Promise<ViewProduct[]> {
+/**
+ * TODO el catálogo, con precio y reseñas, en UNA sola entrada de caché (sin parámetros → clave
+ * estable, prerenderizable). Es la ÚNICA lectura de catálogo que toca la DB; todo lo demás
+ * (por categoría, búsqueda, home, sitemap, relacionados) filtra en memoria sobre este resultado.
+ *
+ * Por qué: la DB es remota y un listado en frío cuesta ~5s. Antes, `listProducts` cacheaba por
+ * combinación de parámetros, así que CADA filtro (categoría, ?q=, marca…) pagaba su propio
+ * llenado en frío. Con una única caché compartida, solo la PRIMERA visita del sitio la calienta;
+ * después cada filtro/búsqueda es un `Array.filter` instantáneo. El catálogo es pequeño (decenas
+ * de productos), así que traerlo entero es barato y elimina los round-trips por-filtro.
+ */
+export async function listAllProducts(): Promise<ViewProduct[]> {
   'use cache'
   cacheLife('hours')
   cacheTag('products')
@@ -110,9 +119,7 @@ export async function listProducts(
   const { products } = await medusa.store.product.list({
     region_id,
     fields: PRODUCT_FIELDS,
-    limit: params.limit ?? 100,
-    ...(params.categoryId ? { category_id: [params.categoryId] } : {}),
-    ...(params.q ? { q: params.q } : {}),
+    limit: 200,
   })
   const views = products.map(toViewProduct)
   const summaries = await getReviewSummaries(views.map((v) => v.id))
@@ -124,6 +131,42 @@ export async function listProducts(
     }
   }
   return views
+}
+
+/** Normaliza para búsqueda: minúsculas y sin acentos (así "camara" encuentra "cámara"). */
+function norm(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+}
+
+/**
+ * Listado filtrado — filtra EN MEMORIA sobre `listAllProducts` (caché compartida). No toca la DB
+ * por sí mismo, así que cada categoría/búsqueda es instantánea tras calentar la caché una vez.
+ * La búsqueda `q` exige que todos los términos aparezcan en título/marca/categoría/descripción.
+ */
+export async function listProducts(
+  params: { categoryId?: string; q?: string; limit?: number } = {},
+): Promise<ViewProduct[]> {
+  let products = await listAllProducts()
+
+  if (params.categoryId) {
+    products = products.filter((p) => p.categoryIds?.includes(params.categoryId!))
+  }
+
+  const q = params.q?.trim()
+  if (q) {
+    const terms = norm(q).split(/\s+/).filter(Boolean)
+    products = products.filter((p) => {
+      const hay = norm(
+        [p.title, p.brand, p.categoryName, p.description].filter(Boolean).join(' '),
+      )
+      return terms.every((t) => hay.includes(t))
+    })
+  }
+
+  return params.limit ? products.slice(0, params.limit) : products
 }
 
 /**

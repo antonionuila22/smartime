@@ -10,6 +10,10 @@ export type ViewProduct = {
   originalPrice?: number | null
   currencyCode: string
   categoryName?: string | null
+  /** Todas las categorías a las que pertenece (ids). Permite filtrar en memoria por categoría
+   *  igual que el backend (`category_id`), incluso con productos multi-categoría. Opcional: los
+   *  ítems reconstruidos desde localStorage (favoritos/vistos) no llevan categorías. */
+  categoryIds?: string[]
   brand?: string | null
   variantId?: string | null
   inStock: boolean

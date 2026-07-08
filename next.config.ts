@@ -67,7 +67,12 @@ const nextConfig: NextConfig = {
   // useMemo/useCallback/memo manuales). Conservador por diseño: omite los componentes que no
   // puede optimizar con seguridad, no los rompe. Beneficia la superficie cliente (carrito,
   // checkout, cuenta, header). Requiere babel-plugin-react-compiler.
-  reactCompiler: true,
+  //
+  // SOLO EN PRODUCCIÓN: su beneficio es en RUNTIME (memoización del build). En `next dev` el
+  // plugin Babel corre en cada compilación en caliente y multiplica el tiempo de compilación de
+  // la primera visita a cada ruta (medido: una PDP tardaba ~14s en compilar en dev). Desactivarlo
+  // en dev recorta esa compilación drásticamente sin cambiar el bundle de producción.
+  reactCompiler: !isDev,
   experimental: {
     // Inserta el CSS crítico EN LÍNEA en el <head> en vez de un <link> que bloquea el render.
     // Recomendación de rendimiento de Next 16: mejora el LCP en la primera carga (evita un
