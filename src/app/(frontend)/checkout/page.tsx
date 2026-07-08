@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
 import { Check, CircleAlert, Loader2, Lock, MapPin, ShoppingBag, Tag, Truck, X } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Field } from '@/components/ui/field'
+import { InlineError } from '@/components/ui/inline-error'
 import { PayPalButton } from '@/components/checkout/PayPalButton'
 import { useCart } from '@/providers/Cart'
 import {
@@ -373,16 +376,9 @@ export default function CheckoutPage() {
         })}
       </ol>
 
-      {error && (
-        <div
-          ref={errorRef}
-          role="alert"
-          className="mb-6 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-        >
-          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <p>{error}</p>
-        </div>
-      )}
+      <InlineError variant="banner" ref={errorRef} className="mb-6">
+        {error}
+      </InlineError>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
@@ -393,9 +389,9 @@ export default function CheckoutPage() {
                 <MapPin className="size-5 text-primary" /> Datos de envío
               </h2>
               {step !== 'address' && (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-in-stock/10 px-2.5 py-1 text-xs font-semibold text-in-stock">
+                <Badge variant="success" className="shrink-0">
                   <Check className="size-3.5" aria-hidden="true" /> Listo
-                </span>
+                </Badge>
               )}
             </div>
             {step === 'address' ? (
@@ -577,12 +573,7 @@ export default function CheckoutPage() {
                 {promoBusy ? <Loader2 className="size-4 animate-spin" /> : 'Aplicar'}
               </Button>
             </form>
-            {promoError && (
-              <p role="alert" className="mt-2 flex items-start gap-1.5 text-xs font-medium text-destructive">
-                <CircleAlert className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-                {promoError}
-              </p>
-            )}
+            <InlineError className="mt-2">{promoError}</InlineError>
             {appliedPromos.length > 0 && (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {appliedPromos.map((p) => (
@@ -664,35 +655,4 @@ export default function CheckoutPage() {
   )
 }
 
-const Field: React.FC<{
-  label: string
-  value: string
-  onChange: (v: string) => void
-  required?: boolean
-  className?: string
-  type?: string
-  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
-  autoComplete?: string
-  name?: string
-}> = ({ label, value, onChange, required, className, type = 'text', inputMode, autoComplete, name }) => {
-  const id = `chk-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
-  return (
-    <div className={`space-y-1.5 ${className ?? ''}`}>
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        required={required}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
-      />
-    </div>
-  )
-}
 /* eslint-enable @typescript-eslint/no-explicit-any */

@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
+import { InlineError } from '@/components/ui/inline-error'
+
 import { getPayPalInstance } from '@/lib/paypalV6'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -92,12 +94,9 @@ export const PayPalButton: React.FC<{
 
   if (eligible === false) {
     return (
-      <p
-        role="alert"
-        className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-      >
+      <InlineError variant="banner">
         PayPal no está disponible en este momento. Inténtalo de nuevo o contáctanos.
-      </p>
+      </InlineError>
     )
   }
 

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from 'lucide-react'
 
+import { InlineError } from '@/components/ui/inline-error'
+
 import { Button } from '@/components/ui/button'
 import { useCart, type CartLine } from '@/providers/Cart'
 import { medusa } from '@/lib/medusa/sdk'
@@ -192,9 +194,7 @@ export default function CarritoPage() {
 
                 {lineError ? (
                   // Error del backend (p. ej. inventario insuficiente): visible y anunciado.
-                  <p role="alert" className="mt-2 text-xs font-medium text-destructive">
-                    {lineError}
-                  </p>
+                  <InlineError className="mt-2">{lineError}</InlineError>
                 ) : atMax ? (
                   <p className="mt-2 text-xs text-muted-foreground">
                     Máximo disponible en stock ({maxStock}).

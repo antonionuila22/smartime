@@ -3,19 +3,11 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import {
-  ArrowLeft,
-  CircleAlert,
-  Loader2,
-  MapPin,
-  Pencil,
-  Plus,
-  Star,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { ArrowLeft, Loader2, MapPin, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Field, fieldControlClass } from '@/components/ui/field'
+import { InlineError } from '@/components/ui/inline-error'
 import { medusa } from '@/lib/medusa/sdk'
 import {
   createAddress,
@@ -240,15 +232,9 @@ export default function DireccionesPage() {
         </div>
 
         {/* Mensaje de error */}
-        {error && (
-          <div
-            role="alert"
-            className="mt-6 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
-          >
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <p>{error}</p>
-          </div>
-        )}
+        <InlineError variant="banner" className="mt-6">
+          {error}
+        </InlineError>
 
         {/* Formulario de añadir/editar */}
         {editing !== null && (
@@ -431,37 +417,6 @@ export default function DireccionesPage() {
 }
 
 /** Campo de texto reutilizable (mismo estilo que el checkout). */
-const Field: React.FC<{
-  label: string
-  value: string
-  onChange: (v: string) => void
-  required?: boolean
-  type?: string
-  className?: string
-  // Habilita el autocompletado del navegador (igual que en el checkout).
-  name?: string
-  autoComplete?: string
-}> = ({ label, value, onChange, required, type = 'text', className, name, autoComplete }) => {
-  const id = `dir-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
-  return (
-    <div className={`space-y-1.5 ${className ?? ''}`}>
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        name={name}
-        autoComplete={autoComplete}
-        required={required}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
-      />
-    </div>
-  )
-}
-
 /** Select reutilizable para el departamento. */
 const SelectField: React.FC<{
   label: string
@@ -485,7 +440,7 @@ const SelectField: React.FC<{
         autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
+        className={fieldControlClass}
       >
         <option value="">Selecciona un departamento</option>
         {options.map((o) => (

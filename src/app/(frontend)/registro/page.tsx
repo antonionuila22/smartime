@@ -3,7 +3,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { AlertCircle, Eye, EyeOff, Loader2, ShoppingBag } from 'lucide-react'
+import { Eye, EyeOff, Loader2, ShoppingBag } from 'lucide-react'
+
+import { InlineError } from '@/components/ui/inline-error'
 
 import { Button } from '@/components/ui/button'
 import { emitAuthChanged } from '@/lib/authEvents'
@@ -155,15 +157,7 @@ export default function RegistroPage() {
             <p className="text-xs text-muted-foreground">Debe tener al menos 6 caracteres.</p>
           </div>
 
-          {error && (
-            <p
-              role="alert"
-              className="flex items-start gap-2 rounded-xl bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive"
-            >
-              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              <span>{error}</span>
-            </p>
-          )}
+          <InlineError variant="banner">{error}</InlineError>
 
           <Button type="submit" size="lg" className="w-full rounded-full" disabled={loading}>
             {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}

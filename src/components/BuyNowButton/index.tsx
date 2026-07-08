@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CircleAlert, Loader2, Zap } from 'lucide-react'
+import { Loader2, Zap } from 'lucide-react'
+
+import { InlineError } from '@/components/ui/inline-error'
 
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/providers/Cart'
@@ -69,12 +71,7 @@ export const BuyNowButton: React.FC<{
         )}
         Comprar ahora
       </Button>
-      {error && (
-        <p role="alert" className="flex items-start gap-1.5 text-xs font-medium text-destructive">
-          <CircleAlert className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-          {error}
-        </p>
-      )}
+      <InlineError>{error}</InlineError>
     </div>
   )
 }

@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Check, CircleAlert, ShoppingCart } from 'lucide-react'
+import { Check, ShoppingCart } from 'lucide-react'
+
+import { InlineError } from '@/components/ui/inline-error'
 
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { useCart } from '@/providers/Cart'
@@ -42,13 +44,8 @@ export const AddToCart: React.FC<{
     }
   }
 
-  // Mensaje de error inline bajo el botón (mismo patrón que el checkout: role="alert", text-destructive)
-  const errorAlert = error ? (
-    <p role="alert" className="flex items-start gap-1.5 text-xs font-medium text-destructive">
-      <CircleAlert className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-      {error}
-    </p>
-  ) : null
+  // Mensaje de error inline bajo el botón (primitivo compartido del design system)
+  const errorAlert = <InlineError>{error}</InlineError>
 
   // Producto agotado: botón deshabilitado sin lógica de carrito. Respeta iconOnly.
   if (!inStock) {
