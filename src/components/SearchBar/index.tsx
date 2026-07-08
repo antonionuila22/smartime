@@ -100,7 +100,7 @@ export const SearchBar: React.FC<{ className?: string }> = ({ className }) => {
               setOpen(true)
             }}
             onFocus={() => setOpen(true)}
-            placeholder="Buscar Mac, iPhone, accesorios…"
+            placeholder="Buscar productos y marcas…"
             aria-label="Buscar productos"
             autoComplete="off"
             className="h-12 w-full rounded-full border border-input bg-background pl-5 pr-14 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/40"

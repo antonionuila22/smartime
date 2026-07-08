@@ -22,7 +22,9 @@ export const PromoBanner: React.FC = () => {
           <h3 className="mt-3 text-2xl font-bold tracking-tight md:text-4xl">
             Hasta 12 meses sin intereses
           </h3>
-          <p className="mt-2 text-white/85">Compra tu Mac o iPhone hoy y paga en cómodas cuotas.</p>
+          <p className="mt-2 text-white/85">
+            Compra hoy y paga en cómodas cuotas: Apple, audio, gaming y más.
+          </p>
           <Button
             asChild
             size="lg"

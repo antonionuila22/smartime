@@ -47,7 +47,7 @@ export default function CarritoPage() {
             Tu carrito está vacío
           </h1>
           <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-            Descubre nuestros Mac y iPhone originales y añade productos para empezar.
+            Descubre tecnología original con garantía y añade productos para empezar.
           </p>
           <Button asChild size="lg" className="mt-6 rounded-full">
             <Link href="/tienda">Ir a la tienda</Link>

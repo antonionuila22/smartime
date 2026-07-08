@@ -15,6 +15,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base + '/', changeFrequency: 'daily', priority: 1 },
     { url: base + '/tienda', changeFrequency: 'daily', priority: 0.9 },
+    // Páginas informativas (ayuda, legal, empresa): contenido estable
+    { url: base + '/ayuda/como-comprar', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/ayuda/envios', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/ayuda/garantia', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/ayuda/devoluciones', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/ayuda/preguntas-frecuentes', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/terminos', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/privacidad', changeFrequency: 'monthly', priority: 0.5 },
+    { url: base + '/sobre-nosotros', changeFrequency: 'monthly', priority: 0.5 },
   ]
 
   // Productos publicados (listProducts ya viene cacheada con 'use cache').

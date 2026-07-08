@@ -216,7 +216,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 </span>
               )}
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                <Truck className="size-4 shrink-0" /> Recíbelo en 24-48h
+                <Truck className="size-4 shrink-0" /> Envío en 2-4 días hábiles
               </span>
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                 <Store className="size-4 shrink-0" /> Retiro en Tegucigalpa / SPS
@@ -248,8 +248,8 @@ export default async function ProductPage({ params }: { params: Params }) {
             <li className="flex items-start gap-2.5">
               <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" />
               <span className="leading-relaxed">
-                <span className="font-medium text-foreground">Apple original, nuevo y sellado</span>{' '}
-                <span className="text-muted-foreground">— con garantía y factura</span>
+                <span className="font-medium text-foreground">Original, nuevo y sellado</span>{' '}
+                <span className="text-muted-foreground">— con garantía oficial y factura</span>
               </span>
             </li>
             <li className="flex items-start gap-2.5">

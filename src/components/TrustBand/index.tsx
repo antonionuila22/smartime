@@ -2,9 +2,9 @@ import React from 'react'
 import { BadgeCheck, CreditCard, RotateCcw, Truck } from 'lucide-react'
 
 const ITEMS = [
-  { icon: BadgeCheck, title: 'Apple original y sellado', desc: 'Garantía y factura incluidas' },
+  { icon: BadgeCheck, title: 'Originales y sellados', desc: 'Garantía y factura incluidas' },
   { icon: CreditCard, title: 'Cuotas sin intereses', desc: 'Hasta 12 meses con tarjeta' },
-  { icon: Truck, title: 'Envío 24-48h o retiro', desc: 'Tegucigalpa, SPS y todo el país' },
+  { icon: Truck, title: 'Envío a todo el país', desc: '2-4 días hábiles, o retiro en tienda' },
   { icon: RotateCcw, title: 'Devolución 7 días', desc: 'Compra con confianza' },
 ]
 

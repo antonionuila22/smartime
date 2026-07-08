@@ -108,8 +108,11 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                           alt={s.title}
                           fill
                           sizes="340px"
-                          // El primer slide es el LCP (above the fold) → carga prioritaria.
+                          // El primer slide es el LCP (above the fold) → carga prioritaria
+                          // (preload). Los demás rotan a la vista en segundos: eager sin preload,
+                          // para que al entrar no aparezcan en blanco ni disparen avisos de LCP.
                           priority={idx === 0}
+                          loading={idx === 0 ? undefined : 'eager'}
                           className="object-contain p-6"
                         />
                       </div>

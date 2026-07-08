@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 }
 
 const PROMO_TILES = [
-  { icon: Truck, title: 'Envío a todo Honduras', desc: 'Recíbelo en 24-48h' },
+  { icon: Truck, title: 'Envío a todo Honduras', desc: 'Recíbelo en 2-4 días hábiles' },
   { icon: CreditCard, title: 'Hasta 12 meses', desc: 'Sin intereses' },
   { icon: ShieldCheck, title: 'Garantía y originales', desc: 'Productos sellados' },
   { icon: Headphones, title: 'Asesoría experta', desc: 'Te ayudamos a elegir' },
@@ -108,8 +108,9 @@ export default async function HomePage() {
     },
   ].filter(Boolean) as HeroSlide[]
 
-  // Carruseles por categoría (en el orden de las categorías)
+  // Solo carruseles insignia (Mac e iPhone): el resto de categorías se descubre en el CategoryGrid, para no alargar la home con carruseles casi idénticos.
   const categoryRows = categories
+    .filter((c) => ['Mac', 'iPhone'].includes(c.name))
     .map((c) => ({ c, items: byCat.get(c.name) ?? [] }))
     .filter((r) => r.items.length > 0)
 

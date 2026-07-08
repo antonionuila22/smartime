@@ -74,11 +74,11 @@ export const metadata: Metadata = {
   // Plantilla de título: cada página aporta solo su parte y se le añade el sufijo de marca.
   // `default` cubre las páginas que no definen título propio.
   title: {
-    default: 'smartime — Apple Mac y iPhone en Honduras',
+    default: 'smartime — Tecnología original en Honduras',
     template: '%s — smartime',
   },
   description:
-    'Mac y iPhone originales en Honduras, con garantía y envío a todo el país. Precios en Lempiras.',
+    'Tecnología original en Honduras: Apple, electrodomésticos, audio, gaming y smart home, con garantía y envío a todo el país. Precios en Lempiras.',
   applicationName: 'smartime',
   openGraph: mergeOpenGraph(),
   twitter: {

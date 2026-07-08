@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import React from 'react'
+import { User } from 'lucide-react'
 
 import { Logo } from '@/components/Logo/Logo'
 import { SearchBar } from '@/components/SearchBar'
@@ -29,6 +30,17 @@ export const HeaderClient: React.FC = () => {
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
             <AccountButton />
+            {/* Acceso a cuenta en móvil: el bloque «Bienvenido / Iniciar sesión» solo existe desde sm */}
+            <Link
+              href="/cuenta"
+              aria-label="Mi cuenta"
+              className="group grid size-10 place-items-center rounded-full border border-input transition duration-300 hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:hidden"
+            >
+              <User
+                className="size-5 text-primary transition duration-300 group-hover:scale-110"
+                aria-hidden
+              />
+            </Link>
             <FavoritesButton />
             <CartButton />
           </div>

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { Facebook, Instagram, Mail, Phone } from 'lucide-react'
+import { Mail, Phone } from 'lucide-react'
 
 import { Logo } from '@/components/Logo/Logo'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,8 @@ const COLS: { title: string; links: [string, string][] }[] = [
     links: [
       ['Mac', '/tienda?categoria=mac'],
       ['iPhone', '/tienda?categoria=iphone'],
+      ['Electrodomésticos', '/tienda?categoria=electrodom'],
+      ['Audio', '/tienda?categoria=audio'],
       ['Ofertas', '/tienda?oferta=1'],
       ['Todos los productos', '/tienda'],
     ],
@@ -18,20 +20,19 @@ const COLS: { title: string; links: [string, string][] }[] = [
   {
     title: 'Ayuda',
     links: [
-      ['Cómo comprar', '#'],
-      ['Envíos', '#'],
-      ['Garantía', '#'],
-      ['Devoluciones', '#'],
-      ['Preguntas frecuentes', '#'],
+      ['Cómo comprar', '/ayuda/como-comprar'],
+      ['Envíos', '/ayuda/envios'],
+      ['Garantía', '/ayuda/garantia'],
+      ['Devoluciones', '/ayuda/devoluciones'],
+      ['Preguntas frecuentes', '/ayuda/preguntas-frecuentes'],
     ],
   },
   {
     title: 'Empresa',
     links: [
-      ['Sobre smartime', '#'],
-      ['Nuestras tiendas', '#'],
-      ['Términos y condiciones', '#'],
-      ['Privacidad', '#'],
+      ['Sobre smartime', '/sobre-nosotros'],
+      ['Términos y condiciones', '/terminos'],
+      ['Privacidad', '/privacidad'],
     ],
   },
 ]
@@ -40,51 +41,40 @@ const COLS: { title: string; links: [string, string][] }[] = [
 const footerLinkClass =
   'inline-block rounded-sm transition-colors duration-300 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 
-const socialLinkClass =
-  'grid size-10 place-items-center rounded-full border border-border text-muted-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-
 export function Footer() {
+  // Mismo patrón que FloatingWhatsApp: número internacional sin "+" (ej. 50499998888)
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hola, quiero recibir ofertas de smartime')}`
+    : null
+
   return (
     <footer className="mt-auto border-t border-border bg-muted/30">
-      {/* Banda 1: marca + newsletter */}
+      {/* Banda 1: marca + ofertas por WhatsApp */}
       <div className="container grid gap-10 py-12 md:py-16 lg:grid-cols-2 lg:gap-16">
         <div>
           <Logo showTagline />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Mac y iPhone originales en Honduras, con garantía y envío a todo el país.
+            Tecnología original en Honduras: Apple, audio, gaming y hogar inteligente, con garantía
+            y envío a todo el país.
           </p>
-          <div className="mt-5 flex gap-2">
-            <a href="#" aria-label="Facebook de smartime" className={socialLinkClass}>
-              <Facebook className="size-4" aria-hidden />
-            </a>
-            <a href="#" aria-label="Instagram de smartime" className={socialLinkClass}>
-              <Instagram className="size-4" aria-hidden />
-            </a>
-          </div>
         </div>
 
-        <div className="lg:justify-self-end lg:text-left">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-foreground">
-            Newsletter
-          </h4>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Recibe ofertas y novedades antes que nadie.
-          </p>
-          <div className="mt-4 flex w-full max-w-md gap-2">
-            <input
-              type="email"
-              placeholder="Tu correo"
-              aria-label="Tu correo electrónico"
-              className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm outline-none transition duration-300 hover:border-primary/40 focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/40"
-            />
-            <Button type="button" className="h-11 shrink-0 rounded-full px-5">
-              Suscribirme
+        {whatsappHref && (
+          <div className="lg:justify-self-end lg:text-left">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-foreground">
+              Ofertas por WhatsApp
+            </h4>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Recibe ofertas y novedades antes que nadie, sin spam.
+            </p>
+            <Button asChild className="mt-4 h-11 rounded-full px-5">
+              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                Recibir ofertas por WhatsApp
+              </a>
             </Button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Sin spam. Puedes darte de baja cuando quieras.
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Banda 2: columnas de enlaces + contacto */}
@@ -136,7 +126,7 @@ export function Footer() {
       {/* Banda 3: legal + métodos de pago */}
       <div className="border-t border-border">
         <div className="container flex flex-col items-center justify-between gap-3 py-5 text-xs text-muted-foreground md:flex-row">
-          <span>© 2026 smartime · Apple Mac &amp; iPhone en Honduras</span>
+          <span>© 2026 smartime · Tecnología original en Honduras</span>
           <div className="flex items-center gap-2">
             <span>Pago seguro:</span>
             {['VISA', 'Mastercard', 'PayPal'].map((m) => (

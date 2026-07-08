@@ -5,7 +5,7 @@
 
 const STORE_NAME = 'smartime'
 const STORE_DESCRIPTION =
-  'Mac y iPhone originales en Honduras, con garantía y envío a todo el país. Precios en Lempiras.'
+  'Tecnología original en Honduras: Apple, electrodomésticos, audio, gaming y smart home, con garantía y envío a todo el país. Precios en Lempiras.'
 // Redes/perfiles oficiales (rellenar cuando existan; `sameAs` refuerza la entidad de marca).
 const SAME_AS: string[] = []
 
