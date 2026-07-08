@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { Loader2, LogOut } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { emitAuthChanged } from '@/lib/authEvents'
 import { medusa } from '@/lib/medusa/sdk'
 
 export const LogoutButton: React.FC = () => {
@@ -18,6 +19,8 @@ export const LogoutButton: React.FC = () => {
     } catch {
       /* noop */
     }
+    // Avisa a la UI persistente (header) de que la sesión cambió, sin recarga completa.
+    emitAuthChanged()
     router.push('/')
     router.refresh()
   }

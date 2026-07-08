@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import { AlertCircle, Loader2, ShoppingBag } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { emitAuthChanged } from '@/lib/authEvents'
 import { medusa } from '@/lib/medusa/sdk'
 import { useCart } from '@/providers/Cart'
 
@@ -52,6 +53,8 @@ export default function RegistroPage() {
       }
       // Conserva el carrito anónimo asociándolo a la cuenta nueva (no pierde productos).
       await claimForCustomer()
+      // Avisa a la UI persistente (header) de que la sesión cambió, sin recarga completa.
+      emitAuthChanged()
       setLoading(false)
       const redirect = new URLSearchParams(window.location.search).get('redirect') || '/cuenta'
       router.push(redirect)

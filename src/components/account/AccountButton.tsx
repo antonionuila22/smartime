@@ -1,20 +1,30 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { User } from 'lucide-react'
 
 import { medusa } from '@/lib/medusa/sdk'
+import { AUTH_CHANGED_EVENT } from '@/lib/authEvents'
 
 export const AccountButton: React.FC = () => {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
 
-  useEffect(() => {
+  const check = useCallback(() => {
     medusa.store.customer
       .retrieve()
       .then(({ customer }) => setLoggedIn(!!customer))
       .catch(() => setLoggedIn(false))
   }, [])
+
+  useEffect(() => {
+    check()
+    // El header persiste entre navegaciones cliente: sin esto, tras iniciar/cerrar sesión
+    // seguiría mostrando el estado viejo hasta una recarga completa. login/registro/logout
+    // emiten este evento al cambiar la sesión.
+    window.addEventListener(AUTH_CHANGED_EVENT, check)
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, check)
+  }, [check])
 
   const href = loggedIn ? '/cuenta' : '/login'
   const top = loggedIn ? 'Hola' : 'Bienvenido'
