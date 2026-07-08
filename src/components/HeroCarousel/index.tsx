@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/utilities/ui'
@@ -23,14 +23,29 @@ export type HeroSlide = {
 
 export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
   const [i, setI] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [hovering, setHovering] = useState(false)
+  const [focusWithin, setFocusWithin] = useState(false)
+  const [manualPaused, setManualPaused] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
   const count = slides.length
 
+  // Respeta prefers-reduced-motion: si el usuario pide menos movimiento, NO auto-avanzamos.
   useEffect(() => {
-    if (paused || count <= 1) return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReducedMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  // Auto-avanza salvo hover, foco DENTRO (teclado), pausa manual, movimiento reducido, o 1 slide.
+  // Así CUALQUIER usuario (ratón, teclado, lector) puede detener el movimiento (WCAG 2.2.2).
+  const autoplay = !hovering && !focusWithin && !manualPaused && !reducedMotion && count > 1
+  useEffect(() => {
+    if (!autoplay) return
     const id = setInterval(() => setI((v) => (v + 1) % count), 6000)
     return () => clearInterval(id)
-  }, [paused, count])
+  }, [autoplay, count])
 
   if (!count) return null
   const go = (n: number) => setI((n + count) % count)
@@ -41,8 +56,13 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
       role="region"
       aria-roledescription="carrusel"
       aria-label="Promociones destacadas"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onFocusCapture={() => setFocusWithin(true)}
+      onBlurCapture={(e) => {
+        // Solo reanudar cuando el foco sale del carrusel por completo (no al saltar entre sus botones).
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusWithin(false)
+      }}
     >
       <div className="relative h-[480px] overflow-hidden rounded-2xl md:h-[520px]">
         <div
@@ -54,6 +74,10 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
             return (
               <div
                 key={idx}
+                // Diapositivas fuera de vista: fuera del orden de tabulación y del árbol de
+                // accesibilidad (inert) para que teclado y lectores solo vean la activa.
+                aria-hidden={idx !== i}
+                inert={idx !== i}
                 className={`relative h-full w-full shrink-0 bg-gradient-to-br ${s.gradient}`}
               >
                 {/* halos + viñeta para dar profundidad al fondo */}
@@ -140,6 +164,15 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
 
       {count > 1 && (
         <>
+          {/* Pausar/Reanudar: control accesible para CUALQUIER usuario (WCAG 2.2.2), no solo hover. */}
+          <button
+            type="button"
+            onClick={() => setManualPaused((p) => !p)}
+            aria-label={manualPaused ? 'Reanudar la rotación automática' : 'Pausar la rotación automática'}
+            className="absolute right-3 top-3 z-10 grid size-9 place-items-center rounded-full bg-white/85 text-foreground shadow-md ring-1 ring-black/5 backdrop-blur transition duration-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            {manualPaused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+          </button>
           <button
             onClick={() => go(i - 1)}
             aria-label="Anterior"

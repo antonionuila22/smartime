@@ -38,7 +38,23 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY)
-      if (raw) setItems(JSON.parse(raw))
+      if (raw) {
+        // Robustez: el localStorage puede estar corrupto y devolver algo que no es
+        // un array; validamos la forma y filtramos solo items con id/handle string
+        // para no tumbar el provider con datos inválidos.
+        const parsed: unknown = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          setItems(
+            parsed.filter(
+              (i): i is WishItem =>
+                typeof i === 'object' &&
+                i !== null &&
+                typeof (i as WishItem).id === 'string' &&
+                typeof (i as WishItem).handle === 'string',
+            ),
+          )
+        }
+      }
     } catch {
       /* noop */
     }

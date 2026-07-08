@@ -6,13 +6,59 @@ import React, { useEffect, useState } from 'react'
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { useCart } from '@/providers/Cart'
+import { useCart, type CartLine } from '@/providers/Cart'
 import { medusa } from '@/lib/medusa/sdk'
 import { formatPrice } from '@/utilities/format'
+
+/** Campos de stock que el carrito puede traer por variante (si se pidieron en sus FIELDS). */
+type LineVariantStock = {
+  inventory_quantity?: number | null
+  manage_inventory?: boolean | null
+  allow_backorder?: boolean | null
+}
+
+/**
+ * Unidades máximas pedibles de una línea, o `null` si no hay tope conocido. Misma lógica que
+ * `toViewProduct` en lib/medusa/data.ts: solo hay tope cuando el inventario se rastrea sin
+ * backorder Y el carrito incluye `inventory_quantity`. Si el dato no viene (no se solicitó en los
+ * FIELDS del carrito), devolvemos null y dejamos que el backend valide el incremento.
+ */
+function getLineStock(item: CartLine): number | null {
+  const variant = (item as CartLine & { variant?: LineVariantStock | null }).variant
+  if (!variant || !variant.manage_inventory || variant.allow_backorder) return null
+  if (variant.inventory_quantity == null) return null
+  return Number(variant.inventory_quantity) || 0
+}
+
+/** Mensaje legible a partir de un error desconocido, sin recurrir a `any`. */
+function toErrorMessage(e: unknown): string {
+  if (e && typeof e === 'object' && 'message' in e) {
+    const m = (e as { message?: unknown }).message
+    if (typeof m === 'string' && m.trim()) return m
+  }
+  return 'No se pudo actualizar la cantidad. Inténtalo de nuevo.'
+}
 
 export default function CarritoPage() {
   const { cart, count, total, updateItem, removeItem, ready, loading } = useCart()
   const [authed, setAuthed] = useState<boolean | null>(null)
+  // Error de actualización por línea: evita "tragar" el rechazo del backend (p. ej. sin stock).
+  const [qtyErrors, setQtyErrors] = useState<Record<string, string>>({})
+
+  // Cambia la cantidad de una línea capturando el error del backend en vez de descartarlo.
+  const changeQty = async (lineId: string, qty: number) => {
+    setQtyErrors((prev) => {
+      if (!prev[lineId]) return prev
+      const next = { ...prev }
+      delete next[lineId]
+      return next
+    })
+    try {
+      await updateItem(lineId, qty)
+    } catch (e) {
+      setQtyErrors((prev) => ({ ...prev, [lineId]: toErrorMessage(e) }))
+    }
+  }
 
   useEffect(() => {
     medusa.store.customer
@@ -69,7 +115,12 @@ export default function CarritoPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
         <ul className="h-fit divide-y divide-border rounded-2xl border border-border bg-card">
-          {items.map((item) => (
+          {items.map((item) => {
+            // Tope de stock (si el carrito trae el dato): deshabilita '+' al alcanzar el máximo.
+            const maxStock = getLineStock(item)
+            const atMax = maxStock != null && item.quantity >= maxStock
+            const lineError = qtyErrors[item.id]
+            return (
             <li key={item.id} className="flex gap-4 p-4 sm:p-5">
               <Link
                 href={item.product_handle ? `/producto/${item.product_handle}` : '/tienda'}
@@ -115,7 +166,7 @@ export default function CarritoPage() {
                     <button
                       type="button"
                       disabled={loading}
-                      onClick={() => updateItem(item.id, item.quantity - 1)}
+                      onClick={() => changeQty(item.id, item.quantity - 1)}
                       className="grid size-10 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                       aria-label="Restar una unidad"
                     >
@@ -126,10 +177,11 @@ export default function CarritoPage() {
                     </span>
                     <button
                       type="button"
-                      disabled={loading}
-                      onClick={() => updateItem(item.id, item.quantity + 1)}
+                      disabled={loading || atMax}
+                      onClick={() => changeQty(item.id, item.quantity + 1)}
                       className="grid size-10 place-items-center rounded-full text-muted-foreground transition duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                       aria-label="Sumar una unidad"
+                      title={atMax ? 'Alcanzaste el máximo disponible en stock' : undefined}
                     >
                       <Plus className="size-4" />
                     </button>
@@ -137,9 +189,21 @@ export default function CarritoPage() {
 
                   <p className="font-semibold tabular-nums">{formatPrice(item.total)}</p>
                 </div>
+
+                {lineError ? (
+                  // Error del backend (p. ej. inventario insuficiente): visible y anunciado.
+                  <p role="alert" className="mt-2 text-xs font-medium text-destructive">
+                    {lineError}
+                  </p>
+                ) : atMax ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Máximo disponible en stock ({maxStock}).
+                  </p>
+                ) : null}
               </div>
             </li>
-          ))}
+            )
+          })}
         </ul>
 
         <aside className="h-fit rounded-2xl border border-border bg-card p-6 lg:sticky lg:top-24">

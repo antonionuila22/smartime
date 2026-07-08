@@ -19,7 +19,10 @@ export function getRecentlyViewed(): RecentItem[] {
   if (typeof window === 'undefined') return []
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as RecentItem[]) : []
+    // Robustez: si el dato en localStorage está corrupto (no es un array),
+    // devolvemos [] para que ningún consumidor reciba algo distinto de un array.
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? (parsed as RecentItem[]) : []
   } catch {
     return []
   }

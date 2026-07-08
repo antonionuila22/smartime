@@ -54,9 +54,19 @@ describe('formatPrice (formato Lempiras HNL, es-HN)', () => {
     expect(norm(formatPrice(1000))).toBe('L 1,000')
   })
 
-  it('muestra hasta 2 decimales cuando los hay (maximumFractionDigits 2)', () => {
-    // 1234.5 conserva el decimal significativo.
-    expect(formatPrice(1234.5)).toContain('1,234.5')
+  it('con céntimos SIEMPRE muestra 2 decimales (nunca uno solo)', () => {
+    // Regresión: antes 250.5 daba "L 250.5" (un decimal). Ahora es consistente a 2.
+    expect(norm(formatPrice(250.5))).toBe('L 250.50')
+    expect(norm(formatPrice(1234.5))).toBe('L 1,234.50')
+    // Una cuota real (price/12) conserva sus 2 decimales.
+    expect(norm(formatPrice(2749.92))).toBe('L 2,749.92')
+  })
+
+  it('enteros SIN decimales (etiqueta limpia), con céntimos CON 2 decimales — coherente', () => {
+    expect(norm(formatPrice(18999))).toBe('L 18,999')
+    expect(norm(formatPrice(150))).toBe('L 150')
+    // redondeo a céntimo: 1250.005 → 1,250.01 (2 decimales)
+    expect(norm(formatPrice(1250.005))).toBe('L 1,250.01')
   })
 
   it('valor ausente / null / no finito → 0 (nunca "NaN")', () => {

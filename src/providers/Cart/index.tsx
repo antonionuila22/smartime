@@ -63,7 +63,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const id = typeof window !== 'undefined' ? localStorage.getItem(CART_KEY) : null
+    let id: string | null = null
+    // Storage puede lanzar (modo privado/permisos): que un fallo de lectura NO deje `ready` colgado
+    // (rompería todo el segmento cliente: header, carrito, checkout).
+    try {
+      id = typeof window !== 'undefined' ? localStorage.getItem(CART_KEY) : null
+    } catch {
+      /* storage bloqueado: seguimos sin carrito persistido */
+    }
     if (!id) {
       setReady(true)
       return
@@ -71,7 +78,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     medusa.store.cart
       .retrieve(id, { fields: FIELDS })
       .then(({ cart }) => setCart(cart as any))
-      .catch(() => localStorage.removeItem(CART_KEY))
+      .catch((e: any) => {
+        // Solo OLVIDAR el carrito si el backend dice que ya no existe (404/400/422). Ante fallos
+        // TRANSITORIOS (red caída, 5xx, timeout del pooler remoto) conservamos el id: borrarlo
+        // huérfanaría el carrito del servidor y mostraría "carrito vacío" por un blip pasajero.
+        const status = e?.status
+        if (status === 404 || status === 400 || status === 422) {
+          try {
+            localStorage.removeItem(CART_KEY)
+          } catch {
+            /* noop */
+          }
+        }
+      })
       .finally(() => setReady(true))
   }, [])
 
@@ -81,14 +100,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const creatingRef = useRef<Promise<string> | null>(null)
 
   const ensureCart = useCallback(async (): Promise<string> => {
-    const existing = localStorage.getItem(CART_KEY)
+    let existing: string | null = null
+    try {
+      existing = localStorage.getItem(CART_KEY)
+    } catch {
+      /* storage bloqueado */
+    }
     if (existing) return existing
     if (creatingRef.current) return creatingRef.current
 
     const creation = (async () => {
       const region_id = await getRegionId()
       const { cart: created } = await medusa.store.cart.create({ region_id })
-      localStorage.setItem(CART_KEY, created.id)
+      try {
+        localStorage.setItem(CART_KEY, created.id)
+      } catch {
+        /* storage bloqueado: el carrito vive en memoria esta sesión */
+      }
       setCart(created as any)
       return created.id
     })()

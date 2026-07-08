@@ -56,8 +56,10 @@ export default function RegistroPage() {
       // Avisa a la UI persistente (header) de que la sesión cambió, sin recarga completa.
       emitAuthChanged()
       setLoading(false)
-      const redirect = new URLSearchParams(window.location.search).get('redirect') || '/cuenta'
-      router.push(redirect)
+      // Seguridad: solo aceptamos rutas internas (un único '/', ni '//' ni '/\') para evitar open redirect.
+      const redirect = new URLSearchParams(window.location.search).get('redirect')
+      const safe = /^\/(?![/\\])/.test(redirect || '') ? (redirect as string) : '/cuenta'
+      router.push(safe)
       router.refresh()
     } catch {
       setLoading(false)

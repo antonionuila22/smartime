@@ -385,7 +385,8 @@ export default function DireccionesPage() {
                           type="button"
                           onClick={() => openEdit(addr)}
                           disabled={isDeleting}
-                          aria-label="Editar dirección"
+                          // a11y: identificar la dirección para distinguir botones iguales en la lista
+                          aria-label={`Editar dirección de ${fullName || addr.address_1}`}
                           className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
                         >
                           <Pencil className="size-4" aria-hidden="true" />
@@ -394,7 +395,8 @@ export default function DireccionesPage() {
                           type="button"
                           onClick={() => onDelete(addr)}
                           disabled={isDeleting}
-                          aria-label="Borrar dirección"
+                          // a11y: identificar la dirección para distinguir botones iguales en la lista
+                          aria-label={`Borrar dirección de ${fullName || addr.address_1}`}
                           className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors duration-300 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 disabled:opacity-50"
                         >
                           {isDeleting ? (

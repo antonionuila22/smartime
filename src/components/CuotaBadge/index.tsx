@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ArrowRight, CreditCard, X } from 'lucide-react'
 
 import { cn } from '@/utilities/ui'
@@ -76,65 +76,91 @@ export const CuotaBadge: React.FC<{ price?: number | null; variant?: 'compact' |
 const Modal: React.FC<{
   table: ReturnType<typeof financingTable>
   onClose: () => void
-}> = ({ table, onClose }) => (
-  <div
-    className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
-    onClick={(e) => {
-      e.stopPropagation()
-      onClose()
-    }}
-  >
+}> = ({ table, onClose }) => {
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  // a11y: al abrir movemos el foco al diálogo y bloqueamos el scroll del body;
+  // al cerrar (desmontar) restauramos el scroll y devolvemos el foco al disparador.
+  useEffect(() => {
+    const trigger = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+      trigger?.focus()
+    }
+  }, [])
+
+  return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Planes de cuotas"
-      className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl"
-      onClick={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClose()
+      }}
     >
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold tracking-tight">Planes de cuotas</h3>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Cerrar"
-          className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-      <table className="mt-4 w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left text-muted-foreground">
-            <th className="pb-2 font-medium">Plazo</th>
-            <th className="pb-2 text-right font-medium">Cuota/mes</th>
-            <th className="pb-2 text-right font-medium">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {table.map((row) => (
-            <tr key={row.months} className="border-b border-border last:border-0">
-              <td className="py-2.5">
-                {row.months} meses
-                {row.interest === 0 && (
-                  <span className="ml-1.5 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
-                    0%
-                  </span>
-                )}
-              </td>
-              <td className="py-2.5 text-right font-semibold tabular-nums">
-                {formatPrice(row.monthly)}
-              </td>
-              <td className="py-2.5 text-right tabular-nums text-muted-foreground">
-                {formatPrice(row.total)}
-              </td>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Planes de cuotas"
+        tabIndex={-1}
+        // a11y: cerrar con Escape (el foco vive dentro del diálogo)
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.stopPropagation()
+            onClose()
+          }
+        }}
+        className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl focus:outline-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold tracking-tight">Planes de cuotas</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <table className="mt-4 w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-muted-foreground">
+              <th className="pb-2 font-medium">Plazo</th>
+              <th className="pb-2 text-right font-medium">Cuota/mes</th>
+              <th className="pb-2 text-right font-medium">Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-        Cuotas sin intereses con tarjetas de crédito participantes (BAC, Ficohsa, Atlántida,
-        Banpaís). Sujeto a aprobación del banco emisor. Los valores son una estimación.
-      </p>
+          </thead>
+          <tbody>
+            {table.map((row) => (
+              <tr key={row.months} className="border-b border-border last:border-0">
+                <td className="py-2.5">
+                  {row.months} meses
+                  {row.interest === 0 && (
+                    <span className="ml-1.5 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
+                      0%
+                    </span>
+                  )}
+                </td>
+                <td className="py-2.5 text-right font-semibold tabular-nums">
+                  {formatPrice(row.monthly)}
+                </td>
+                <td className="py-2.5 text-right tabular-nums text-muted-foreground">
+                  {formatPrice(row.total)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+          Cuotas sin intereses con tarjetas de crédito participantes (BAC, Ficohsa, Atlántida,
+          Banpaís). Sujeto a aprobación del banco emisor. Los valores son una estimación.
+        </p>
+      </div>
     </div>
-  </div>
-)
+  )
+}

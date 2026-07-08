@@ -33,8 +33,10 @@ export default function LoginPage() {
       await claimForCustomer()
       // Avisa a la UI persistente (header) de que la sesión cambió, sin recarga completa.
       emitAuthChanged()
-      const redirect = new URLSearchParams(window.location.search).get('redirect') || '/cuenta'
-      router.push(redirect)
+      // Seguridad: solo aceptamos rutas internas (un único '/', ni '//' ni '/\') para evitar open redirect.
+      const redirect = new URLSearchParams(window.location.search).get('redirect')
+      const safe = /^\/(?![/\\])/.test(redirect || '') ? (redirect as string) : '/cuenta'
+      router.push(safe)
       router.refresh()
     } catch {
       setLoading(false)
@@ -73,7 +75,7 @@ export default function LoginPage() {
               placeholder="nombre@correo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 placeholder:text-muted-foreground/60 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 placeholder:text-muted-foreground hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
             />
           </div>
           <div className="space-y-1.5">
@@ -88,7 +90,7 @@ export default function LoginPage() {
               placeholder="Tu contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 placeholder:text-muted-foreground/60 hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 placeholder:text-muted-foreground hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
             />
           </div>
 

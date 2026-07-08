@@ -12,7 +12,9 @@ import { formatPrice } from '@/utilities/format'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const ORDER_FIELDS =
-  'id,display_id,status,total,subtotal,shipping_total,currency_code,email,metadata,created_at,' +
+  // `original_item_total` = BRUTO de ítems antes de descuento (para que Subtotal reconcilie con el
+  // Total tax-inclusive; `subtotal` es NETO de ISV). Ver checkout/page.tsx.
+  'id,display_id,status,total,subtotal,original_item_total,discount_total,shipping_total,currency_code,email,metadata,created_at,' +
   '*items,*shipping_address,*shipping_methods,*shipping_methods.shipping_option'
 
 export default function ConfirmacionPage() {
@@ -111,15 +113,27 @@ export default function ConfirmacionPage() {
                 {item.product_title || item.title}
                 {item.quantity > 1 ? ` × ${item.quantity}` : ''}
               </span>
-              <span className="shrink-0 font-medium tabular-nums">{formatPrice(item.total)}</span>
+              <span className="shrink-0 font-medium tabular-nums">
+                {formatPrice(item.original_total ?? item.total)}
+              </span>
             </li>
           ))}
         </ul>
         <dl className="mt-4 space-y-2.5 border-t border-border pt-4 text-sm">
-          {order.subtotal != null && (
+          {(order.original_item_total ?? order.subtotal) != null && (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Subtotal</dt>
-              <dd className="font-medium tabular-nums">{formatPrice(order.subtotal)}</dd>
+              <dd className="font-medium tabular-nums">
+                {formatPrice(order.original_item_total ?? order.subtotal)}
+              </dd>
+            </div>
+          )}
+          {(order.discount_total ?? 0) > 0 && (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Descuento</dt>
+              <dd className="font-medium tabular-nums text-in-stock">
+                -{formatPrice(order.discount_total)}
+              </dd>
             </div>
           )}
           {method && (

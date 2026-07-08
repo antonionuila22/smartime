@@ -24,7 +24,11 @@ export type CheckoutAddress = {
 
 /** Campos del cart que necesita el checkout (no inflar el mini-cart del provider). */
 export const CHECKOUT_FIELDS =
-  'id,email,currency_code,region_id,total,subtotal,shipping_total,item_total,discount_total,' +
+  // OJO con precios tax-inclusive (ISV incluido): `subtotal`/`item.subtotal` son NETOS de ISV
+  // (precio/(1+tasa)) mientras `total`/`item.total`/`original_item_total` son BRUTOS (lo que se
+  // cobra). Para que el resumen reconcilie (Subtotal − Descuento + Envío = Total) usamos el bruto
+  // `original_item_total` como "Subtotal", no `subtotal`. Ver checkout/page.tsx.
+  'id,email,currency_code,region_id,total,subtotal,original_item_total,tax_total,shipping_total,item_total,discount_total,' +
   '*items,*items.variant,*items.product,' +
   '*shipping_address,*billing_address,*shipping_methods,*promotions,' +
   '*payment_collection,*payment_collection.payment_sessions'

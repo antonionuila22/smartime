@@ -197,8 +197,16 @@ async function fetchProductByHandle(handle: string): Promise<ViewProduct> {
   return view
 }
 
-/** Producto por handle para la PDP; `null` si no existe (sin cachear el negativo). */
+/**
+ * Producto por handle para la PDP; `null` si no existe (sin cachear el negativo).
+ * PRIMERO deriva del catálogo compartido (`listAllProducts`, ya en caché caliente y con los MISMOS
+ * campos) → cero round-trips a la BD en el caso común. Solo si el producto no está en ese conjunto
+ * (p. ej. más allá del límite de 200, o un caso raro) cae a la query directa por handle.
+ */
 export async function getProductByHandle(handle: string): Promise<ViewProduct | null> {
+  const all = await listAllProducts().catch((): ViewProduct[] => [])
+  const found = all.find((p) => p.handle === handle)
+  if (found) return found
   return fetchProductByHandle(handle).catch(() => null)
 }
 

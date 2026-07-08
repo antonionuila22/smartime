@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { BadgeCheck, Loader2, Star } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -142,6 +143,8 @@ export const ReviewsSection: React.FC<{
 }
 
 const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ productId, onDone }) => {
+  // a11y/UX: preservar la ficha actual para volver tras iniciar sesión
+  const pathname = usePathname()
   const [rating, setRating] = useState(5)
   const [hover, setHover] = useState(0)
   const [title, setTitle] = useState('')
@@ -199,11 +202,14 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
     <form onSubmit={submit} className="mt-6 rounded-2xl border border-border bg-card p-5 sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium">Tu calificación:</span>
-        <div className="flex" onMouseLeave={() => setHover(0)}>
+        {/* a11y: grupo de radios para exponer la calificación seleccionada */}
+        <div className="flex" role="radiogroup" aria-label="Tu calificación" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((i) => (
             <button
               key={i}
               type="button"
+              role="radio"
+              aria-checked={i === rating}
               onClick={() => setRating(i)}
               onMouseEnter={() => setHover(i)}
               aria-label={`${i} ${i === 1 ? 'estrella' : 'estrellas'}`}
@@ -226,6 +232,8 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Título (opcional)"
+        // a11y: etiqueta accesible; el placeholder no basta como nombre del campo
+        aria-label="Título de la reseña (opcional)"
         className="mt-4 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition duration-300 focus-visible:ring-2 focus-visible:ring-primary/40"
       />
       <textarea
@@ -233,10 +241,16 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
         onChange={(e) => setContent(e.target.value)}
         placeholder="Cuéntanos tu experiencia con este producto…"
         rows={4}
+        // a11y: etiqueta accesible; el placeholder no basta como nombre del campo
+        aria-label="Tu opinión sobre el producto"
         className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none transition duration-300 focus-visible:ring-2 focus-visible:ring-primary/40"
       />
       {msg && (
         <p
+          // a11y: anunciar el estado del formulario a lectores de pantalla
+          // (alert asertivo para errores, status educado para éxito/aviso de login)
+          role={msg.type === 'err' ? 'alert' : 'status'}
+          aria-live={msg.type === 'err' ? 'assertive' : 'polite'}
           className={cn(
             'mt-3 text-sm font-medium',
             msg.type === 'ok' ? 'text-success' : msg.type === 'login' ? 'text-primary' : 'text-destructive',
@@ -244,7 +258,10 @@ const ReviewForm: React.FC<{ productId: string; onDone: () => void }> = ({ produ
         >
           {msg.text}{' '}
           {msg.type === 'login' && (
-            <Link href="/login?redirect=/cuenta" className="underline">
+            <Link
+              href={`/login?redirect=${encodeURIComponent(pathname || '/cuenta')}`}
+              className="underline"
+            >
               Iniciar sesión
             </Link>
           )}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Check, CircleAlert, Loader2, Lock, MapPin, ShoppingBag, Tag, Truck, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -69,6 +69,13 @@ export default function CheckoutPage() {
   const [promoError, setPromoError] = useState<string | null>(null)
 
   const cartId: string | undefined = miniCart?.id
+
+  // Lleva a la vista el banner de error dondequiera que ocurra. Sin esto, un fallo del pago (con el
+  // botón de PayPal abajo en móvil) mostraría el error arriba, fuera de pantalla.
+  const errorRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [error])
 
   // Gate de cuenta + vinculación + carga del carrito de checkout.
   // La DB del backend es remota (~170ms/round-trip), así que el arranque se hace en DOS OLAS
@@ -260,6 +267,29 @@ export default function CheckoutPage() {
     )
   }
 
+  // Falló la CARGA del carrito (hay cartId pero el retrieve no devolvió carrito): distinto de
+  // "carrito vacío". Mostramos error + recargar en vez de afirmar falsamente "no hay nada que pagar".
+  if (cartId && !cart) {
+    return (
+      <div className="container py-12 md:py-16">
+        <div className="mx-auto max-w-md rounded-2xl border border-destructive/30 bg-destructive/5 px-6 py-16 text-center">
+          <div className="mx-auto grid size-16 place-items-center rounded-full bg-destructive/10 text-destructive">
+            <CircleAlert className="size-8" strokeWidth={1.5} />
+          </div>
+          <h1 className="mt-5 text-2xl md:text-3xl font-bold tracking-tight">
+            No pudimos cargar tu carrito
+          </h1>
+          <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
+            {error || 'Hubo un problema temporal al cargar tu pedido. Vuelve a intentarlo.'}
+          </p>
+          <Button size="lg" className="mt-6 rounded-full" onClick={() => window.location.reload()}>
+            Recargar la página
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   const items = cart?.items ?? []
   if (items.length === 0) {
     return (
@@ -283,7 +313,9 @@ export default function CheckoutPage() {
   }
 
   const total = cart?.total ?? 0
-  const subtotal = cart?.subtotal ?? cart?.item_total ?? 0
+  // "Subtotal" = total BRUTO de ítems ANTES de descuento (original_item_total). Así reconcilia:
+  // Subtotal − Descuento + Envío = Total. NO usar cart.subtotal (es NETO de ISV con tax-inclusive).
+  const subtotal = cart?.original_item_total ?? cart?.item_total ?? cart?.subtotal ?? 0
   const shippingTotal = cart?.shipping_total ?? 0
   const hasShipping = (cart?.shipping_methods?.length ?? 0) > 0
   const discountTotal = cart?.discount_total ?? 0
@@ -343,6 +375,7 @@ export default function CheckoutPage() {
 
       {error && (
         <div
+          ref={errorRef}
           role="alert"
           className="mb-6 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
         >
@@ -369,7 +402,7 @@ export default function CheckoutPage() {
               <form onSubmit={onSubmitAddress} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Nombre" value={address.first_name} onChange={(v) => setAddress((a) => ({ ...a, first_name: v }))} required />
                 <Field label="Apellido" value={address.last_name} onChange={(v) => setAddress((a) => ({ ...a, last_name: v }))} required />
-                <Field label="Teléfono" value={address.phone || ''} onChange={(v) => setAddress((a) => ({ ...a, phone: v }))} required className="sm:col-span-2" />
+                <Field label="Teléfono" type="tel" inputMode="tel" autoComplete="tel" value={address.phone || ''} onChange={(v) => setAddress((a) => ({ ...a, phone: v }))} required className="sm:col-span-2" />
                 <Field label="Dirección" value={address.address_1} onChange={(v) => setAddress((a) => ({ ...a, address_1: v }))} required className="sm:col-span-2" />
                 <Field label="Referencia (opcional)" value={address.address_2 || ''} onChange={(v) => setAddress((a) => ({ ...a, address_2: v }))} className="sm:col-span-2" />
                 <Field label="Ciudad" value={address.city} onChange={(v) => setAddress((a) => ({ ...a, city: v }))} required />
@@ -413,7 +446,7 @@ export default function CheckoutPage() {
                   </span>
                 )}
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-3" role="radiogroup" aria-label="Método de envío">
                 {shippingOptions.map((o) => {
                   const eta = etaFromShippingData(o.data)
                   const price = o.amount ?? o.calculated_price?.calculated_amount ?? 0
@@ -422,8 +455,12 @@ export default function CheckoutPage() {
                     <button
                       key={o.id}
                       type="button"
+                      role="radio"
+                      aria-checked={active}
                       onClick={() => onChooseShipping(o.id)}
-                      disabled={busy}
+                      // En 'payment' la orden de PayPal ya tiene el total CONGELADO: cambiar el envío
+                      // aquí descuadraría el monto autorizado → se deshabilita (ya se muestra "Listo").
+                      disabled={busy || step === 'payment'}
                       className={`flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60 ${
                         active
                           ? 'border-primary bg-primary/5 ring-1 ring-primary'
@@ -498,7 +535,9 @@ export default function CheckoutPage() {
                   {item.product_title || item.title}
                   {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                 </span>
-                <span className="shrink-0 font-medium tabular-nums">{formatPrice(item.total)}</span>
+                <span className="shrink-0 font-medium tabular-nums">
+                  {formatPrice(item.original_total ?? item.total)}
+                </span>
               </li>
             ))}
           </ul>
@@ -631,7 +670,10 @@ const Field: React.FC<{
   onChange: (v: string) => void
   required?: boolean
   className?: string
-}> = ({ label, value, onChange, required, className }) => {
+  type?: string
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
+  autoComplete?: string
+}> = ({ label, value, onChange, required, className, type = 'text', inputMode, autoComplete }) => {
   const id = `chk-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/g, '')}`
   return (
     <div className={`space-y-1.5 ${className ?? ''}`}>
@@ -640,7 +682,9 @@ const Field: React.FC<{
       </label>
       <input
         id={id}
-        type="text"
+        type={type}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}

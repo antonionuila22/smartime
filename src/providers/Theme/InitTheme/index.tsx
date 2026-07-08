@@ -24,7 +24,12 @@ export const InitTheme: React.FC = () => {
     }
 
     var themeToSet = '${defaultTheme}'
-    var preference = window.localStorage.getItem('${themeLocalStorageKey}')
+    // El acceso a localStorage puede lanzar (modo privado/permisos); lo aislamos
+    // para que el script anti-FOUC nunca tumbe la primera pintura.
+    var preference = null
+    try {
+      preference = window.localStorage.getItem('${themeLocalStorageKey}')
+    } catch (e) {}
 
     // Solo respetamos una preferencia explícita guardada por el usuario; si no,
     // usamos el tema por defecto (oscuro, look premium).
@@ -32,6 +37,7 @@ export const InitTheme: React.FC = () => {
       themeToSet = preference
     }
 
+    // Aplicamos SIEMPRE el data-theme (con fallback a defaultTheme).
     document.documentElement.setAttribute('data-theme', themeToSet)
   })();
   `,
