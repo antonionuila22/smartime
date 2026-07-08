@@ -159,7 +159,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             )}
           </div>
 
-          <h1 className="mt-3 font-serif text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
             {product.title}
           </h1>
 

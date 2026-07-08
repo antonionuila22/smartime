@@ -2,20 +2,15 @@ import type { Metadata } from 'next'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
-import { Fraunces, Poppins } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import React from 'react'
 
+// Una sola familia de texto (Poppins) para titulares y cuerpo → look tecnología limpio y una
+// fuente web menos que descargar (mejor LCP). Se retiró la serif Fraunces.
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-poppins',
-  display: 'swap',
-})
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-fraunces',
   display: 'swap',
 })
 
@@ -34,7 +29,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      className={cn(poppins.variable, fraunces.variable, GeistMono.variable)}
+      className={cn(poppins.variable, GeistMono.variable)}
       lang="es"
       suppressHydrationWarning
     >

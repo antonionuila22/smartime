@@ -8,6 +8,12 @@
       "port": 3000
     },
     {
+      "name": "store-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3007"],
+      "port": 3007
+    },
+    {
       "name": "medusa-admin",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],

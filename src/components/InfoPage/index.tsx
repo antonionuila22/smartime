@@ -23,7 +23,7 @@ export function InfoPage({
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">{eyebrow}</p>
           )}
-          <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
           {intro && <p className="mt-3 text-base leading-relaxed text-muted-foreground">{intro}</p>}
         </header>
         <div className="mt-10 space-y-10">{children}</div>

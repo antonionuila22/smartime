@@ -102,7 +102,8 @@ export default async function HomePage() {
       subtitle: 'Apple, electrodomésticos, audio y más. Paga en cómodas cuotas.',
       cta: 'Ver ofertas',
       href: `/tienda?oferta=1`,
-      image: bySlug('smart-tv-samsung-55')?.image ?? bySlug('dyson-cordless')?.image,
+      // Slide PROMOCIONAL (no un producto): sin imagen → el hero lo muestra como texto centrado a
+      // todo el ancho, evitando una tarjeta de imagen floja/vacía.
       price: bySlug('smart-tv-samsung-55')?.price,
       gradient: 'from-[#1e3a8a] via-[#1e40af] to-[#0b1220]',
     },

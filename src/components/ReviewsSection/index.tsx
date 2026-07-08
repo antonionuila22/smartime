@@ -49,7 +49,7 @@ export const ReviewsSection: React.FC<{
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Reseñas</p>
-          <h2 className="mt-1 font-serif text-2xl font-bold tracking-tight">
+          <h2 className="mt-1 text-2xl font-bold tracking-tight">
             Opiniones de clientes
           </h2>
         </div>

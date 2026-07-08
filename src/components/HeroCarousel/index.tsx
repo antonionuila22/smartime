@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/utilities/ui'
 import { formatPrice } from '@/utilities/format'
 import { startingMonthly } from '@/utilities/financing'
 
@@ -43,7 +44,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative h-[420px] overflow-hidden rounded-2xl md:h-[520px]">
+      <div className="relative h-[480px] overflow-hidden rounded-2xl md:h-[520px]">
         <div
           className="flex h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${i * 100}%)` }}
@@ -59,8 +60,17 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                 <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-white/10 blur-2xl" />
                 <div className="pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full bg-white/[0.06] blur-3xl" />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-                <div className="container grid h-full grid-cols-1 items-center gap-6 md:grid-cols-2">
-                  <div className="z-10 text-white md:pl-14">
+                {/* content-center: en móvil el grupo texto+imagen se centra vertical y deja aire
+                    abajo para los dots (sin colisionar con los botones). */}
+                <div className="container grid h-full grid-cols-1 content-center items-center gap-5 md:grid-cols-2 md:gap-6">
+                  <div
+                    className={cn(
+                      'z-10 text-center text-white md:pl-14 md:text-left',
+                      // Sin imagen (slide promocional) → el texto ocupa todo el ancho y se centra
+                      // también en desktop, para no dejar media columna vacía.
+                      !s.image && 'md:col-span-2 md:pl-0 md:text-center',
+                    )}
+                  >
                     {s.eyebrow && (
                       <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide ring-1 ring-white/20 backdrop-blur">
                         {s.eyebrow}
@@ -69,7 +79,9 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                     <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight md:text-6xl">
                       {s.title}
                     </h2>
-                    <p className="mt-4 max-w-md text-base text-white/85 md:text-lg">{s.subtitle}</p>
+                    <p className="mx-auto mt-4 max-w-md text-base text-white/85 md:mx-0 md:text-lg">
+                      {s.subtitle}
+                    </p>
                     {s.price ? (
                       <p className="mt-4 text-white">
                         <span className="text-sm text-white/70">Desde </span>
@@ -81,7 +93,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                         )}
                       </p>
                     ) : null}
-                    <div className="mt-6 flex flex-wrap gap-3">
+                    <div className="mt-6 flex flex-wrap justify-center gap-3 md:justify-start">
                       <Button
                         asChild
                         size="lg"
@@ -101,13 +113,14 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                   </div>
 
                   {s.image && (
-                    <div className="relative hidden items-center justify-center md:flex">
-                      <div className="relative aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+                    <div className="relative flex items-center justify-center">
+                      {/* Móvil: tarjeta contenida (~192px) bajo el texto. Desktop: cuadrado lateral. */}
+                      <div className="relative aspect-square w-40 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 sm:w-48 md:w-full md:max-w-[340px]">
                         <Image
                           src={s.image}
                           alt={s.title}
                           fill
-                          sizes="340px"
+                          sizes="(max-width: 768px) 192px, 340px"
                           // El primer slide es el LCP (above the fold) → carga prioritaria
                           // (preload). Los demás rotan a la vista en segundos: eager sin preload,
                           // para que al entrar no aparezcan en blanco ni disparen avisos de LCP.
