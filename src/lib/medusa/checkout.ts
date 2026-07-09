@@ -33,6 +33,75 @@ export const CHECKOUT_FIELDS =
   '*shipping_address,*billing_address,*shipping_methods,*promotions,' +
   '*payment_collection,*payment_collection.payment_sessions'
 
+/* ------------------------------------------------------------------ *
+ * Lógica PURA de dinero/pago del checkout (extraída de la página para poder TESTEARLA sin montar
+ * el componente cliente de 700 líneas — era el código de mayor riesgo sin cobertura). Son funciones
+ * sin efectos: mismas entradas → mismas salidas.
+ * ------------------------------------------------------------------ */
+
+/** Campos de totales que necesita el resumen (con precios tax-inclusive, ver computeCartSummary). */
+type SummarizableCart = {
+  total?: number | null
+  subtotal?: number | null
+  original_item_total?: number | null
+  item_total?: number | null
+  shipping_total?: number | null
+  discount_total?: number | null
+  shipping_methods?: unknown[] | null
+}
+
+export type CartSummary = {
+  subtotal: number
+  total: number
+  shippingTotal: number
+  discountTotal: number
+  hasShipping: boolean
+}
+
+/**
+ * Totales del resumen del pedido. CLAVE con precios tax-inclusive (ISV incluido): "Subtotal" es el
+ * BRUTO de ítems ANTES de descuento (`original_item_total`), NO `subtotal` (que es NETO de ISV);
+ * así reconcilia Subtotal − Descuento + Envío = Total. Ver el bug de dinero corregido en el audit.
+ */
+export function computeCartSummary(cart: SummarizableCart | null | undefined): CartSummary {
+  return {
+    total: cart?.total ?? 0,
+    subtotal: cart?.original_item_total ?? cart?.item_total ?? cart?.subtotal ?? 0,
+    shippingTotal: cart?.shipping_total ?? 0,
+    discountTotal: cart?.discount_total ?? 0,
+    hasShipping: (cart?.shipping_methods?.length ?? 0) > 0,
+  }
+}
+
+type PaymentSessionLike = {
+  data?: { id?: string; usd_value?: string; fx_hnl_per_usd?: number } | null
+} | null | undefined
+
+export type ParsedPaymentSession = { orderId?: string; usd?: string; fx?: number }
+
+/** Extrae del `session.data` del proveedor PayPal el id de la orden, el monto en USD y la tasa FX. */
+export function parsePaymentSession(session: PaymentSessionLike): ParsedPaymentSession {
+  const data = session?.data ?? {}
+  return { orderId: data.id, usd: data.usd_value, fx: data.fx_hnl_per_usd }
+}
+
+type CompleteResultLike = {
+  type?: string
+  order?: { id?: string } | null
+  error?: { message?: string } | null
+} | null | undefined
+
+/** Interpreta el resultado de `completeCart`: pedido creado (éxito) o mensaje de fallo. */
+export function interpretCompleteResult(
+  res: CompleteResultLike,
+): { ok: true; orderId: string } | { ok: false; message: string } {
+  if (res?.type === 'order' && res.order?.id) return { ok: true, orderId: res.order.id }
+  return {
+    ok: false,
+    message: res?.error?.message || 'No pudimos confirmar el pago. Tu carrito sigue intacto.',
+  }
+}
+
 /** Gate: cliente autenticado o null (sin lanzar). */
 export async function getCustomerOrNull(): Promise<HttpTypes.StoreCustomer | null> {
   try {

@@ -16,14 +16,18 @@ import {
   addShipping,
   applyPromo,
   bindCartToCustomer,
+  completeCart,
+  computeCartSummary,
   getCustomerOrNull,
   initPayment,
+  interpretCompleteResult,
+  type ParsedPaymentSession,
   listPaymentProviders,
   listShipping,
+  parsePaymentSession,
   removePromo,
   retrieveCheckoutCart,
   setAddress as setCartAddress,
-  completeCart,
 } from '@/lib/medusa/checkout'
 import { etaFromShippingData } from '@/utilities/eta'
 import { formatPrice } from '@/utilities/format'
@@ -61,7 +65,7 @@ export default function CheckoutPage() {
   const [shippingOptions, setShippingOptions] = useState<any[]>([])
   const [selectedShip, setSelectedShip] = useState<string | null>(null)
   const [providerId, setProviderId] = useState<string | null>(null)
-  const [payment, setPayment] = useState<{ orderId: string; usd?: string; fx?: number } | null>(null)
+  const [payment, setPayment] = useState<ParsedPaymentSession | null>(null)
   const [booting, setBooting] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -185,8 +189,7 @@ export default function CheckoutPage() {
       const ck = await retrieveCheckoutCart(cartId)
       const { cart: updated, session } = await initPayment(ck as any, providerId)
       setCart(updated)
-      const data: any = session?.data || {}
-      setPayment({ orderId: data.id, usd: data.usd_value, fx: data.fx_hnl_per_usd })
+      setPayment(parsePaymentSession(session))
       setStep('payment')
     } catch (e: any) {
       setError('No pudimos iniciar el pago con PayPal. Inténtalo de nuevo.')
@@ -200,13 +203,13 @@ export default function CheckoutPage() {
     setBusy(true)
     setError(null)
     try {
-      const res: any = await completeCart(cartId)
-      if (res?.type === 'order') {
+      const outcome = interpretCompleteResult(await completeCart(cartId))
+      if (outcome.ok) {
         clear()
-        router.push(`/checkout/confirmacion?order=${res.order.id}`)
+        router.push(`/checkout/confirmacion?order=${outcome.orderId}`)
         return // navegamos fuera; no reactivamos el botón
       }
-      setError(res?.error?.message || 'No pudimos confirmar el pago. Tu carrito sigue intacto.')
+      setError(outcome.message)
       setBusy(false)
     } catch {
       // completeCart LANZA ante un fallo transitorio (red/500/JWT expirado) DESPUÉS de que PayPal
@@ -315,13 +318,9 @@ export default function CheckoutPage() {
     )
   }
 
-  const total = cart?.total ?? 0
-  // "Subtotal" = total BRUTO de ítems ANTES de descuento (original_item_total). Así reconcilia:
-  // Subtotal − Descuento + Envío = Total. NO usar cart.subtotal (es NETO de ISV con tax-inclusive).
-  const subtotal = cart?.original_item_total ?? cart?.item_total ?? cart?.subtotal ?? 0
-  const shippingTotal = cart?.shipping_total ?? 0
-  const hasShipping = (cart?.shipping_methods?.length ?? 0) > 0
-  const discountTotal = cart?.discount_total ?? 0
+  // Totales del resumen vía función PURA testeada (incluye la reconciliación de ISV: "Subtotal" es
+  // el bruto de ítems, no cart.subtotal que es neto). Ver computeCartSummary en lib/medusa/checkout.
+  const { total, subtotal, shippingTotal, discountTotal, hasShipping } = computeCartSummary(cart)
   // Cupones con código aplicados al carrito (ignoramos los automáticos sin código).
   const appliedPromos: any[] = (cart?.promotions ?? []).filter((p: any) => p?.code)
   // Índice del paso actual, solo para pintar el stepper de progreso.
