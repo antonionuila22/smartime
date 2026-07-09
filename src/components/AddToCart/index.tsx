@@ -26,7 +26,7 @@ export const AddToCart: React.FC<{
   iconOnly = false,
   inStock = true,
 }) => {
-  const { addItem, loading } = useCart()
+  const { addItem } = useCart()
   const [added, setAdded] = useState(false)
   // Estado de error local: si addItem falla lo mostramos inline en vez de tragarlo (catch silencioso)
   const [error, setError] = useState<string | null>(null)
@@ -34,12 +34,16 @@ export const AddToCart: React.FC<{
   const handle = async () => {
     if (!variantId) return
     setError(null)
+    // Feedback OPTIMISTA: el check ✓ aparece al instante (y el badge del carrito ya sube por el
+    // conteo optimista del provider); la escritura al servidor —lenta contra la DB remota— va
+    // detrás. El botón NO se bloquea, así se pueden añadir varias unidades sin esperar.
+    setAdded(true)
+    window.setTimeout(() => setAdded(false), 1500)
     try {
       await addItem(variantId)
-      setAdded(true)
-      window.setTimeout(() => setAdded(false), 1500)
     } catch {
-      // Avisamos al usuario en vez de silenciar el fallo
+      // Si la escritura falla, revertimos el check y avisamos (el provider ya revirtió el conteo).
+      setAdded(false)
       setError('No se pudo agregar al carrito. Inténtalo de nuevo.')
     }
   }
@@ -69,7 +73,7 @@ export const AddToCart: React.FC<{
       <div className="flex flex-col items-start gap-1.5">
         <Button
           onClick={handle}
-          disabled={!variantId || loading}
+          disabled={!variantId}
           className={className}
           size="icon"
           variant={variant}
@@ -88,7 +92,7 @@ export const AddToCart: React.FC<{
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Button
         onClick={handle}
-        disabled={!variantId || loading}
+        disabled={!variantId}
         className="w-full"
         size={size}
         variant={variant}

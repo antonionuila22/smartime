@@ -62,6 +62,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cart, setCart] = useState<MedusaCart>(null)
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
+  // Conteo OPTIMISTA: unidades ya añadidas cuya ESCRITURA en el servidor aún no vuelve. Las
+  // escrituras de carrito de Medusa tardan ~6-8s (el workflow hace decenas de consultas a la DB
+  // remota a ~168ms c/u). Sumándolo al conteo real, el badge reacciona AL INSTANTE al clic; se
+  // descuenta al confirmar (el ítem ya está en `cart`) o al fallar (se revierte).
+  const [optimisticCount, setOptimisticCount] = useState(0)
 
   useEffect(() => {
     let id: string | null = null
@@ -131,6 +136,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = useCallback(
     async (variantId: string, qty = 1) => {
+      setOptimisticCount((c) => c + qty) // el badge reacciona YA; el servidor sincroniza detrás
       setLoading(true)
       try {
         const id = await ensureCart()
@@ -140,6 +146,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         setCart(updated as any)
       } finally {
+        // Éxito → el ítem ya cuenta en `cart`; fallo → revertimos. En ambos casos se descuenta.
+        setOptimisticCount((c) => Math.max(0, c - qty))
         setLoading(false)
       }
     },
@@ -204,7 +212,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = useMemo<CartContextValue>(() => {
     const items = cart?.items ?? []
-    const count = items.reduce((s, i) => s + (i.quantity || 0), 0)
+    const count = items.reduce((s, i) => s + (i.quantity || 0), 0) + optimisticCount
     return {
       cart,
       count,
@@ -217,7 +225,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       claimForCustomer,
       clear,
     }
-  }, [cart, ready, loading, addItem, updateItem, removeItem, claimForCustomer, clear])
+  }, [cart, optimisticCount, ready, loading, addItem, updateItem, removeItem, claimForCustomer, clear])
 
   return <CartContext value={value}>{children}</CartContext>
 }
