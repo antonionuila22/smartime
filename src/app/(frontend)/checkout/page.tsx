@@ -636,7 +636,7 @@ export default function CheckoutPage() {
           </dl>
           <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
             <span className="text-base font-bold">Total</span>
-            <span className="text-xl font-bold tabular-nums">{formatPrice(total)}</span>
+            <span className="font-mono text-xl font-bold tabular-nums">{formatPrice(total)}</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">ISV incluido en el precio.</p>
           <p className="mt-4 flex items-center justify-center gap-1.5 border-t border-border pt-4 text-xs text-muted-foreground">

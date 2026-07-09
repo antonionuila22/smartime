@@ -100,7 +100,7 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
         {/* Bloque de precio: jerarquía precio → tachado → ahorro → cuota */}
         <div className="mt-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-xl font-bold tabular-nums tracking-tight text-foreground">
+            <span className="font-mono text-xl font-bold tabular-nums tracking-tight text-foreground">
               {formatPrice(product.price)}
             </span>
             {discount && (

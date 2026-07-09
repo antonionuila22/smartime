@@ -175,7 +175,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           {/* Tarjeta de compra: precio → ahorro → cuotas → confianza → CTAs */}
           <div className="mt-6 rounded-2xl border border-border bg-card p-5 transition-shadow duration-300 hover:shadow-md sm:p-6">
             <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-              <span className="text-4xl font-bold tabular-nums tracking-tight text-foreground">
+              <span className="font-mono text-4xl font-bold tabular-nums tracking-tight text-foreground">
                 {formatPrice(product.price)}
               </span>
               {discount && (

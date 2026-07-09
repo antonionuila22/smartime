@@ -110,7 +110,7 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                     {s.price ? (
                       <p className="mt-4 text-white">
                         <span className="text-sm text-white/70">Desde </span>
-                        <span className="text-2xl font-bold">{formatPrice(s.price)}</span>
+                        <span className="font-mono text-2xl font-bold tabular-nums">{formatPrice(s.price)}</span>
                         {cuota && (
                           <span className="ml-2 text-sm text-white/80">
                             o {formatPrice(cuota.amount)}/mes

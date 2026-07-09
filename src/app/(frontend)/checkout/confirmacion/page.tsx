@@ -144,7 +144,7 @@ export default function ConfirmacionPage() {
         </dl>
         <div className="mt-4 flex items-baseline justify-between border-t border-border pt-4">
           <span className="text-base font-bold">Total</span>
-          <span className="text-xl font-bold tabular-nums">{formatPrice(order.total)}</span>
+          <span className="font-mono text-xl font-bold tabular-nums">{formatPrice(order.total)}</span>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">ISV incluido en el precio.</p>
       </div>

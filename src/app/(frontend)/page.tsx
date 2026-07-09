@@ -8,7 +8,6 @@ import { BrandStrip } from '@/components/BrandStrip'
 import { CategoryGrid, type CatTile } from '@/components/CategoryGrid'
 import { PromoBanner } from '@/components/PromoBanner'
 import { RecentlyViewed } from '@/components/RecentlyViewed'
-import { TrustBand } from '@/components/TrustBand'
 import { JsonLd } from '@/components/JsonLd'
 import { listCategories, listProducts } from '@/lib/medusa/data'
 import type { ViewProduct } from '@/lib/medusa/types'
@@ -164,8 +163,6 @@ export default async function HomePage() {
       ))}
 
       <RecentlyViewed />
-
-      <TrustBand />
     </div>
   )
 }
