@@ -4,6 +4,7 @@ import React from 'react'
 import { Laptop, Package, Smartphone } from 'lucide-react'
 
 import { AddToCart } from '@/components/AddToCart'
+import { Badge } from '@/components/ui/badge'
 import { CuotaBadge } from '@/components/CuotaBadge'
 import { ReviewStars } from '@/components/ReviewStars'
 import { WishlistButton } from '@/components/WishlistButton'
@@ -51,14 +52,14 @@ export const ProductCard: React.FC<{ product: ViewProduct; className?: string }>
           </div>
         )}
         {discount && (
-          <span className="absolute left-3 top-3 rounded-full bg-sale px-2.5 py-1 text-xs font-bold tabular-nums text-sale-foreground shadow-sm">
+          <Badge variant="sale" className="absolute left-3 top-3 font-bold tabular-nums shadow-sm">
             −{discount.percent}%
-          </span>
+          </Badge>
         )}
         {!product.inStock && (
-          <span className="absolute bottom-3 left-3 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground shadow-sm">
+          <Badge variant="muted" className="absolute bottom-3 left-3 shadow-sm">
             Agotado
-          </span>
+          </Badge>
         )}
       </Link>
 

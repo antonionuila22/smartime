@@ -5,6 +5,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/utilities/ui'
 import { formatPrice } from '@/utilities/format'
@@ -96,9 +97,9 @@ export const HeroCarousel: React.FC<{ slides: HeroSlide[] }> = ({ slides }) => {
                     )}
                   >
                     {s.eyebrow && (
-                      <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide ring-1 ring-white/20 backdrop-blur">
+                      <Badge variant="onDark" className="px-3 uppercase tracking-wide">
                         {s.eyebrow}
-                      </span>
+                      </Badge>
                     )}
                     <h2 className="mt-4 text-4xl font-bold leading-[1.02] tracking-tight md:text-6xl">
                       {s.title}

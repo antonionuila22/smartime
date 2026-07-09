@@ -437,9 +437,9 @@ export default function CheckoutPage() {
                   <Truck className="size-5 text-primary" /> Método de envío
                 </h2>
                 {step === 'payment' && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-in-stock/10 px-2.5 py-1 text-xs font-semibold text-in-stock">
+                  <Badge variant="success" className="shrink-0">
                     <Check className="size-3.5" aria-hidden="true" /> Listo
-                  </span>
+                  </Badge>
                 )}
               </div>
               <div className="mt-4 space-y-3" role="radiogroup" aria-label="Método de envío">

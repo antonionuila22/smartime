@@ -2,8 +2,8 @@
 
 import React, {
   createContext,
+  use,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -219,12 +219,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart, ready, loading, addItem, updateItem, removeItem, claimForCustomer, clear])
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return <CartContext value={value}>{children}</CartContext>
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function useCart(): CartContextValue {
-  const ctx = useContext(CartContext)
+  const ctx = use(CartContext)
   if (!ctx) throw new Error('useCart debe usarse dentro de <CartProvider>')
   return ctx
 }
